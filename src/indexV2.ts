@@ -42,6 +42,24 @@ const ACTION_TO_TIER: Record<ClaimAction, number> = {
 	'upgrade-orb-verified-nft': 3,
 };
 
+export interface HashFunctionOutput {
+	hash: bigint;
+	digest: `0x${string}`;
+}
+export function hashToField(input: Bytes.Bytes | string): HashFunctionOutput {
+	if (Bytes.validate(input) || Hex.validate(input)) return hashEncodedBytes(input);
+	return hashString(input);
+}
+function hashString(input: string): HashFunctionOutput {
+	const bytesInput = Buffer.from(input);
+	return hashEncodedBytes(bytesInput);
+}
+function hashEncodedBytes(input: Hex.Hex | Bytes.Bytes): HashFunctionOutput {
+	const hash = BigInt(Hash.keccak256(input, { as: 'Hex' })) >> 8n;
+	const rawDigest = hash.toString(16);
+	return { hash, digest: `0x${rawDigest.padStart(64, '0')}` };
+}
+
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 		// Standard CORS and response headers
@@ -110,8 +128,7 @@ export default {
 				body: JSON.stringify({
 					...body.proof,
 					action: body.action,
-					// Hash the signal for secure verification
-					signal_hash: Hash.keccak256(Buffer.from(body.signal ?? ''), { as: 'Hex' }),
+					signal_hash: hashToField(body.signal ?? '').digest,
 				}),
 			});
 
