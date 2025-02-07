@@ -137,7 +137,7 @@ export default {
 
 			// Determine tier based on claim action
 			const tier = ACTION_TO_TIER[body.action];
-			const nftContractAddress = '0x67529C533fEB9f78a0663790459AB727c3563A39' as `0x${string}`;
+			const nftContractAddress = '0x4E52d9e8d2F70aD1805084BA4fa849dC991E7c88' as `0x${string}`;
 
 			// Dynamically select mint or upgrade function
 			const hash = await client.writeContract({
