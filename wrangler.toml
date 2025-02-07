@@ -1,6 +1,6 @@
 #:schema node_modules/wrangler/config-schema.json
-name = "worldid-backend"
-main = "src/index.ts"
+name = "worldid-backend-v2"
+main = "src/indexV2.ts"
 compatibility_date = "2024-12-24"
 compatibility_flags = ["nodejs_compat"]
 
