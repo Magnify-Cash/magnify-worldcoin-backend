@@ -138,7 +138,7 @@ export default {
 				signalHash: hashToField(body.signal ?? '').digest,
 			});
 
-			const verifyResponse = await fetch('https://developer.worldcoin.org/api/v2/verify/app_5d33ab69e404d358e7fde190d5fb7241', {
+			const verifyResponse = await fetch(`https://developer.worldcoin.org/api/v2/verify/${env.WORLD_COIN_APP_ID}`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
