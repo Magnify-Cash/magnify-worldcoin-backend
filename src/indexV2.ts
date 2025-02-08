@@ -59,7 +59,12 @@ function hashEncodedBytes(input: Hex.Hex | Bytes.Bytes): HashFunctionOutput {
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
-		// Standard CORS and response headers
+		console.log('Request received:', {
+			method: request.method,
+			url: request.url,
+			headers: Object.fromEntries(request.headers.entries()),
+		});
+
 		const headers = {
 			'Access-Control-Allow-Origin': '*',
 			'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -68,22 +73,26 @@ export default {
 		};
 
 		try {
-			// Handle preflight CORS requests
 			if (request.method === 'OPTIONS') {
+				console.log('Handling CORS preflight request');
 				return new Response(null, { headers });
 			}
 
-			// Ensure only POST requests are processed
 			if (request.method !== 'POST') {
+				console.log('Invalid method:', request.method);
 				return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers });
 			}
 
-			// Parse incoming request body
+			// Parse request body with logging
 			const rawBody = await request.text();
+			console.log('Raw request body:', rawBody);
+
 			let body: RequestBody;
 			try {
 				body = JSON.parse(rawBody);
+				console.log('Parsed request body:', body);
 			} catch (e) {
+				console.error('JSON parsing error:', e);
 				return new Response(
 					JSON.stringify({
 						error: 'Invalid JSON',
@@ -93,18 +102,26 @@ export default {
 				);
 			}
 
-			// Validate required parameters
+			// Validate parameters with logging
 			const missingParams: string[] = [];
 			if (!body.proof) missingParams.push('proof');
 			if (!body.signal) missingParams.push('signal');
 			if (!body.action) missingParams.push('action');
-
-			// Additional validation for upgrade actions
-			if (body.action.startsWith('upgrade') && !body.tokenId) {
+			if (body.action?.startsWith('upgrade') && !body.tokenId) {
 				missingParams.push('tokenId');
 			}
 
+			console.log('Parameter validation:', {
+				missingParams,
+				hasProof: !!body.proof,
+				hasSignal: !!body.signal,
+				hasAction: !!body.action,
+				action: body.action,
+				tokenId: body.tokenId,
+			});
+
 			if (missingParams.length > 0) {
+				console.log('Missing parameters:', missingParams);
 				return new Response(
 					JSON.stringify({
 						error: 'Missing required parameters',
@@ -114,7 +131,13 @@ export default {
 				);
 			}
 
-			// Verify World ID proof with external service
+			// World ID verification logging
+			console.log('Preparing World ID verification request:', {
+				action: body.action,
+				signal: body.signal,
+				signalHash: hashToField(body.signal ?? '').digest,
+			});
+
 			const verifyResponse = await fetch('https://developer.worldcoin.org/api/v2/verify/app_5d33ab69e404d358e7fde190d5fb7241', {
 				method: 'POST',
 				headers: {
@@ -129,9 +152,14 @@ export default {
 				}),
 			});
 
-			// Reject if World ID verification fails
+			console.log('World ID verification response:', {
+				status: verifyResponse.status,
+				ok: verifyResponse.ok,
+			});
+
 			if (!verifyResponse.ok) {
 				const error = await verifyResponse.text();
+				console.error('World ID verification failed:', error);
 				return new Response(
 					JSON.stringify({
 						error: 'World ID verification failed',
@@ -141,7 +169,12 @@ export default {
 				);
 			}
 
-			// Prepare blockchain wallet and client
+			// Blockchain interaction logging
+			console.log('Setting up blockchain client with env vars present:', {
+				hasPrivateKey: !!env.PRIVATE_KEY,
+				hasAppId: !!env.WORLD_COIN_APP_ID,
+			});
+
 			const account = privateKeyToAccount(env.PRIVATE_KEY as Hex);
 			const client = createWalletClient({
 				account,
@@ -149,11 +182,16 @@ export default {
 				transport: http('https://worldchain-mainnet.g.alchemy.com/public'),
 			});
 
-			// Determine tier based on claim action
 			const tier = ACTION_TO_TIER[body.action];
 			const nftContractAddress = '0x4E52d9e8d2F70aD1805084BA4fa849dC991E7c88' as `0x${string}`;
 
-			// Dynamically select mint or upgrade function
+			console.log('Preparing contract interaction:', {
+				tier,
+				contractAddress: nftContractAddress,
+				isMint: body.action.startsWith('mint'),
+				action: body.action,
+			});
+
 			const hash = await client.writeContract({
 				address: nftContractAddress,
 				abi: [
@@ -180,12 +218,15 @@ export default {
 							},
 				],
 				functionName: body.action.startsWith('mint') ? 'mintNFT' : 'upgradeNFT',
-				args: body.action.startsWith('mint')
-					? [body.signal as `0x${string}`, BigInt(tier)] // Mint
-					: [BigInt(body?.tokenId!), BigInt(tier)], // Upgrade
+				args: body.action.startsWith('mint') ? [body.signal as `0x${string}`, BigInt(tier)] : [BigInt(body?.tokenId!), BigInt(tier)],
 			});
 
-			// Return successful transaction details
+			console.log('Contract interaction successful:', {
+				transactionHash: hash,
+				action: body.action,
+				tier,
+			});
+
 			return new Response(
 				JSON.stringify({
 					success: true,
@@ -196,11 +237,17 @@ export default {
 				{ status: 200, headers },
 			);
 		} catch (error) {
-			// Catch and report any unexpected errors
+			console.error('Unexpected error:', {
+				error,
+				message: error instanceof Error ? error.message : 'Unknown error',
+				stack: error instanceof Error ? error.stack : undefined,
+			});
+
 			return new Response(
 				JSON.stringify({
 					error: 'Internal server error',
 					message: error instanceof Error ? error.message : 'Unknown error',
+					stack: error instanceof Error ? error.stack : undefined,
 				}),
 				{ status: 500, headers },
 			);
