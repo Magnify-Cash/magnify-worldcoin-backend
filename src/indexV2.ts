@@ -19,10 +19,7 @@ interface RequestBody {
 	proof: ISuccessResult; // World ID proof data
 	signal: string; // Unique identifier for the verification
 	action: ClaimAction; // Specific claim/upgrade action
-	nftInfo?: {
-		tokenId: bigint | null;
-		tier: any;
-	};
+	tokenId: string;
 }
 
 // Environment variables required for blockchain interactions
@@ -103,8 +100,8 @@ export default {
 			if (!body.action) missingParams.push('action');
 
 			// Additional validation for upgrade actions
-			if (body.action.startsWith('upgrade') && !body.nftInfo) {
-				missingParams.push('nftInfo');
+			if (body.action.startsWith('upgrade') && !body.tokenId) {
+				missingParams.push('tokenId');
 			}
 
 			if (missingParams.length > 0) {
@@ -185,7 +182,7 @@ export default {
 				functionName: body.action.startsWith('mint') ? 'mintNFT' : 'upgradeNFT',
 				args: body.action.startsWith('mint')
 					? [body.signal as `0x${string}`, BigInt(tier)] // Mint
-					: [BigInt(body.nftInfo?.tokenId!), BigInt(tier)], // Upgrade
+					: [BigInt(body?.tokenId!), BigInt(tier)], // Upgrade
 			});
 
 			// Return successful transaction details
