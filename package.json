@@ -1,5 +1,5 @@
 {
-	"name": "magnify-worldcoin-backend",
+	"name": "magnify-cash-worldid-backend",
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
@@ -14,7 +14,7 @@
 		"@cloudflare/workers-types": "^4.20241224.0",
 		"typescript": "^5.5.2",
 		"vitest": "2.1.8",
-		"wrangler": "^3.60.3"
+		"wrangler": "^3.108.1"
 	},
 	"dependencies": {
 		"@worldcoin/idkit": "^1.3.0",

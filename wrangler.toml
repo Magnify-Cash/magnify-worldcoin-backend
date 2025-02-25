@@ -1,6 +1,6 @@
 #:schema node_modules/wrangler/config-schema.json
-name = "worldid-backend-v2"
-main = "src/indexV2.ts"
+name = "magnify-cash-worldid-backend"
+main = "src/index.ts"
 compatibility_date = "2024-12-24"
 compatibility_flags = ["nodejs_compat"]
 

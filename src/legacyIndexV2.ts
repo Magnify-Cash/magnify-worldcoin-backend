@@ -1,3 +1,4 @@
+// Refers to first backend code used for V2 app during launch (22nd Feb 2025)
 import { Buffer } from 'buffer/index.js';
 import { createWalletClient, http } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
