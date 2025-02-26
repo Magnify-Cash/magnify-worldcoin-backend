@@ -5,6 +5,7 @@ import { worldchain } from 'viem/chains';
 import { type ISuccessResult } from '@worldcoin/idkit';
 import { Bytes, Hex, Hash } from 'ox';
 import { saveWallet } from "./saveWallet";
+import { getTransactionHistory } from './getTransactionHistory';
 
 // Define the comprehensive set of allowed claim actions
 type ClaimAction =
@@ -29,6 +30,7 @@ interface Env {
 	WORLD_COIN_APP_ID: string; // World ID verification app identifier
 	SUPABASE_URL: string; // Supabase URL for database interactions
 	SUPABASE_SERVICE_ROLE_KEY: string; // Supabase service role key for authentication
+	WORLDSCAN_API_KEY: string; // Worldscan API key
 }
 
 // Mapping of claim actions to specific tier IDs
@@ -70,8 +72,12 @@ export default {
 
 		const url = new URL(request.url);
 
-		if (url.pathname === "/save-wallet") {
-		  return await saveWallet(request, env);
+		if (url.pathname === "/saveWallet") {
+			return await saveWallet(request, env);
+		}
+
+		if (url.pathname === "/getTransactionHistory") {
+			return await getTransactionHistory(request, env);
 		}
 
 		const headers = {
