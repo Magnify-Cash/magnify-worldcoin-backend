@@ -44,6 +44,13 @@ const ACTION_TO_TIER: Record<ClaimAction, number> = {
 	'upgrade-orb-verified-nft': 3,
 };
 
+const CORS_HEADERS = {
+	'Access-Control-Allow-Origin': '*',
+	'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+	'Access-Control-Allow-Headers': 'Content-Type',
+	'Content-Type': 'application/json',
+  };
+
 export interface HashFunctionOutput {
 	hash: bigint;
 	digest: `0x${string}`;
@@ -70,6 +77,10 @@ export default {
 			headers: Object.fromEntries(request.headers.entries()),
 		});
 
+		if (request.method === 'OPTIONS') {
+			return new Response(null, { status: 204, headers: CORS_HEADERS });
+		}
+
 		const url = new URL(request.url);
 
 		if (url.pathname === "/saveWallet") {
@@ -80,23 +91,20 @@ export default {
 			return await getTransactionHistory(request, env);
 		}
 
-		const headers = {
-			'Access-Control-Allow-Origin': '*',
-			'Access-Control-Allow-Methods': 'POST, OPTIONS',
-			'Access-Control-Allow-Headers': 'Content-Type',
-			'Content-Type': 'application/json',
-		};
-
 		try {
-			if (request.method === 'OPTIONS') {
-				console.log('Handling CORS preflight request');
-				return new Response(null, { headers });
-			}
-
-			if (request.method !== 'POST') {
-				console.log('Invalid method:', request.method);
-				return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers });
-			}
+			if (url.pathname === "/saveWallet") {
+				const response = await saveWallet(request, env);
+				return new Response(response.body, { status: response.status, headers: { ...CORS_HEADERS } });
+			  }
+		
+			  if (url.pathname === "/getTransactionHistory") {
+				const response = await getTransactionHistory(request, env);
+				return new Response(response.body, { status: response.status, headers: { ...CORS_HEADERS } });
+			  }
+		
+			  if (request.method !== 'POST') {
+				return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: CORS_HEADERS });
+			  }
 
 			// Parse request body with logging
 			const rawBody = await request.text();
@@ -113,7 +121,7 @@ export default {
 						error: 'Invalid JSON',
 						details: e instanceof Error ? e.message : 'Unknown parsing error',
 					}),
-					{ status: 400, headers },
+					{ status: 400, headers: CORS_HEADERS },
 				);
 			}
 
@@ -142,7 +150,7 @@ export default {
 						error: 'Missing required parameters',
 						missingParams,
 					}),
-					{ status: 400, headers },
+					{ status: 400, headers: CORS_HEADERS },
 				);
 			}
 
@@ -180,7 +188,7 @@ export default {
 						error: 'World ID verification failed',
 						details: error,
 					}),
-					{ status: 400, headers },
+					{ status: 400, headers: CORS_HEADERS},
 				);
 			}
 
@@ -249,7 +257,7 @@ export default {
 					tier,
 					action: body.action,
 				}),
-				{ status: 200, headers },
+				{ status: 200, headers: CORS_HEADERS },
 			);
 		} catch (error) {
 			console.error('Unexpected error:', {
@@ -264,7 +272,7 @@ export default {
 					message: error instanceof Error ? error.message : 'Unknown error',
 					stack: error instanceof Error ? error.stack : undefined,
 				}),
-				{ status: 500, headers },
+				{ status: 500, headers: CORS_HEADERS },
 			);
 		}
 	},
