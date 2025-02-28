@@ -7,6 +7,7 @@ import { Bytes, Hex, Hash } from 'ox';
 import { saveWallet } from "./saveWallet";
 import { getTransactionHistory } from './getTransactionHistory';
 import { sendNotification } from './sendNotification';
+import { checkWallet } from './checkWallet';
 
 // Define the comprehensive set of allowed claim actions
 type ClaimAction =
@@ -89,21 +90,27 @@ export default {
 			if (url.pathname === "/saveWallet") {
 				const response = await saveWallet(request, env);
 				return new Response(response.body, { status: response.status, headers: { ...CORS_HEADERS } });
-			  }
+			}
 		
-			  if (url.pathname === "/getTransactionHistory") {
+			if (url.pathname === "/getTransactionHistory") {
 				const response = await getTransactionHistory(request, env);
 				return new Response(response.body, { status: response.status, headers: { ...CORS_HEADERS } });
-			  }
+			}
 
-			  if (url.pathname === "/sendNotification") {
+			if (url.pathname === "/sendNotification") {
 				const response = await sendNotification(request, env);
 				return new Response(response.body, { status: response.status, headers: { ...CORS_HEADERS } });
 			}
+
+			if (url.pathname === "/checkWallet") {
+                const response = await checkWallet(request, env);
+                return new Response(response.body, { status: response.status, headers: { ...CORS_HEADERS } });
+            }
+
 		
-			  if (request.method !== 'POST') {
+			if (request.method !== 'POST') {
 				return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: CORS_HEADERS });
-			  }
+			}
 
 			// Parse request body with logging
 			const rawBody = await request.text();

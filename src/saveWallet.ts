@@ -3,18 +3,10 @@ interface Env {
   SUPABASE_SERVICE_ROLE_KEY: string;
 }
 
-const ALLOWED_ORIGINS = [
-  "https://dev-magnify-cash.netlify.app/",
-  "https://staging-magnify-cash.netlify.app/",
-  "https://miniappv2.magnify.cash/"
-];
-
 export async function saveWallet(request: Request, env: Env): Promise<Response> {
-  const origin = request.headers.get("Origin") || "";
-  const isAllowed = ALLOWED_ORIGINS.includes(origin);
 
   const headers = {
-    "Access-Control-Allow-Origin": isAllowed ? origin : "null",
+    "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Content-Type": "application/json",
@@ -24,19 +16,18 @@ export async function saveWallet(request: Request, env: Env): Promise<Response> 
     return new Response(null, { headers });
   }
 
-  if (!isAllowed) {
-    return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers });
-  }
-
   if (request.method !== "POST") {
     return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers });
   }
 
   try {
-    const { wallet } = (await request.json()) as { wallet: string };
+    const { wallet, notification } = (await request.json()) as { wallet: string; notification: boolean };
 
-    if (!wallet) {
-      return new Response(JSON.stringify({ error: "Missing wallet" }), { status: 400, headers });
+    if (!wallet || typeof notification !== "boolean") {
+      return new Response(
+        JSON.stringify({ error: "Missing or invalid wallet/notification fields" }),
+        { status: 400, headers }
+      );
     }
 
     const supabaseResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/user_wallets`, {
@@ -45,8 +36,9 @@ export async function saveWallet(request: Request, env: Env): Promise<Response> 
         "Content-Type": "application/json",
         "apikey": env.SUPABASE_SERVICE_ROLE_KEY,
         "Authorization": `Bearer ${env.SUPABASE_SERVICE_ROLE_KEY}`,
+        "Prefer": "return=representation"
       },
-      body: JSON.stringify({ wallet, notification: true }),
+      body: JSON.stringify({ wallet, notification }),
     });
 
     const supabaseData = await supabaseResponse.json();
