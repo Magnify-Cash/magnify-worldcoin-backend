@@ -83,14 +83,6 @@ export default {
 
 		const url = new URL(request.url);
 
-		if (url.pathname === "/saveWallet") {
-			return await saveWallet(request, env);
-		}
-
-		if (url.pathname === "/getTransactionHistory") {
-			return await getTransactionHistory(request, env);
-		}
-
 		try {
 			if (url.pathname === "/saveWallet") {
 				const response = await saveWallet(request, env);
