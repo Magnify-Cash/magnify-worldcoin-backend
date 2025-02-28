@@ -32,8 +32,6 @@ export async function sendNotification(request: Request, env: Env): Promise<Resp
       return new Response(JSON.stringify({ error: "Missing or invalid required fields" }), { status: 400, headers });
     }
 
-    console.log("Sending notification:", { app_id, wallet_addresses, title, message, mini_app_path });
-
     // Make request to Worldcoin API
     const worldcoinResponse = await fetch("https://developer.worldcoin.org/api/v2/minikit/send-notification", {
       method: "POST",
