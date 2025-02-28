@@ -6,6 +6,7 @@ import { type ISuccessResult } from '@worldcoin/idkit';
 import { Bytes, Hex, Hash } from 'ox';
 import { saveWallet } from "./saveWallet";
 import { getTransactionHistory } from './getTransactionHistory';
+import { sendNotification } from './sendNotification';
 
 // Define the comprehensive set of allowed claim actions
 type ClaimAction =
@@ -31,6 +32,7 @@ interface Env {
 	SUPABASE_URL: string; // Supabase URL for database interactions
 	SUPABASE_SERVICE_ROLE_KEY: string; // Supabase service role key for authentication
 	WORLDSCAN_API_KEY: string; // Worldscan API key
+	WORLDCOIN_API_KEY: string; // Worldcoin API key
 }
 
 // Mapping of claim actions to specific tier IDs
@@ -93,6 +95,11 @@ export default {
 				const response = await getTransactionHistory(request, env);
 				return new Response(response.body, { status: response.status, headers: { ...CORS_HEADERS } });
 			  }
+
+			  if (url.pathname === "/sendNotification") {
+				const response = await sendNotification(request, env);
+				return new Response(response.body, { status: response.status, headers: { ...CORS_HEADERS } });
+			}
 		
 			  if (request.method !== 'POST') {
 				return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: CORS_HEADERS });
