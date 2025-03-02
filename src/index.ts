@@ -8,6 +8,8 @@ import { saveWallet } from "./saveWallet";
 import { getTransactionHistory } from './getTransactionHistory';
 import { sendNotification } from './sendNotification';
 import { checkWallet } from './checkWallet';
+import { verifyAuthToken } from './middleware/auth';
+import { AuthRequest } from './middleware/auth';
 
 // Define the comprehensive set of allowed claim actions
 type ClaimAction =
@@ -98,8 +100,10 @@ export default {
 			}
 
 			if (url.pathname === "/sendNotification") {
-				const response = await sendNotification(request, env);
-				return new Response(response.body, { status: response.status, headers: { ...CORS_HEADERS } });
+				return verifyAuthToken(request as AuthRequest, async () => {
+					const response = await sendNotification(request, env);
+					return new Response(response.body, { status: response.status, headers: { ...CORS_HEADERS } });
+				});
 			}
 
 			if (url.pathname === "/checkWallet") {
