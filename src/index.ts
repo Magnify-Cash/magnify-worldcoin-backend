@@ -8,7 +8,7 @@ import { saveWallet } from "./saveWallet";
 import { getTransactionHistory } from './getTransactionHistory';
 import { sendNotification } from './sendNotification';
 import { checkWallet } from './checkWallet';
-import { verifyAuthToken } from './middleware/auth';
+import { userAuthentication, verifyAuthToken } from './middleware/auth';
 import { AuthRequest } from './middleware/auth';
 
 // Define the comprehensive set of allowed claim actions
@@ -36,6 +36,9 @@ interface Env {
 	SUPABASE_SERVICE_ROLE_KEY: string; // Supabase service role key for authentication
 	WORLDSCAN_API_KEY: string; // Worldscan API key
 	WORLDCOIN_API_KEY: string; // Worldcoin API key
+	DATABASE_URL: string;
+	NODE_ENV: string;
+	JWT_SECRET: string; // Secret for JWT authentication
 }
 
 // Mapping of claim actions to specific tier IDs
@@ -103,7 +106,7 @@ export default {
 				return verifyAuthToken(request as AuthRequest, async () => {
 					const response = await sendNotification(request, env);
 					return new Response(response.body, { status: response.status, headers: { ...CORS_HEADERS } });
-				});
+				}, env);
 			}
 
 			if (url.pathname === "/checkWallet") {
@@ -111,6 +114,9 @@ export default {
                 return new Response(response.body, { status: response.status, headers: { ...CORS_HEADERS } });
             }
 
+			if (url.pathname === "/login") {
+				return await userAuthentication(request, env);
+			}
 		
 			if (request.method !== 'POST') {
 				return new Response(JSON.stringify({ error: 'Method not allowed' }), { status: 405, headers: CORS_HEADERS });

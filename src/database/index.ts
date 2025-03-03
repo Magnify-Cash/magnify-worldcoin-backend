@@ -5,25 +5,42 @@ interface Env {
     NODE_ENV: string;
 }
 
-//const env: Env = process.env;
+let sequelizeInstance: Sequelize | null = null;
 
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
-    dialect: 'postgres',
-    dialectOptions: {
-        ssl: false
-    },
-});
+/**
+ * Initialize and get the database connection
+ * @returns Sequelize instance
+ */
+export function getConnection(env: Env): Sequelize {
+  if (!sequelizeInstance) {
+    sequelizeInstance = new Sequelize(env.DATABASE_URL, {
+      dialect: 'postgres',
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false
+        } 
+      },
+      logging: process.env.NODE_ENV !== 'production'
+    });
+  }
+  return sequelizeInstance;
+}
+
 
 // Test the connection
-const testConnection = async () => {
-    try {
-        await sequelize.authenticate();
-        console.log('Successfully connected to PostgreSQL database');
-    } catch (error) {
-        console.error('Error connecting to the database:', error);
-    }
-};
+// export const testConnection = async (): Promise<void> => {
+//   try {
+//     const env = {
+//       DATABASE_URL: process.env.DATABASE_URL || '',
+//       NODE_ENV: process.env.NODE_ENV || 'development'
+//     };
+//     const sequelize = getConnection(env);
+//     await sequelize.authenticate();
+//     console.log('Successfully connected to PostgreSQL database');
+//   } catch (error) {
+//     console.error('Error connecting to the database:', error);
+//   }
+// };
 
-testConnection();
-
-export default sequelize;
+export default getConnection;

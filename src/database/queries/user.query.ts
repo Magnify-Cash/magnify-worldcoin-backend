@@ -1,14 +1,19 @@
 import { QueryTypes } from 'sequelize';
-import sequelize from "../index";
+import sequelize, { getConnection } from "../index";
 
 interface UserResult {
     email: string;
     password_hash: string;
 }
 
-const getUserAuthentication = async (email: string, password: string) => {
+interface Env {
+    DATABASE_URL: string;
+    NODE_ENV: string;
+}
+
+const getUserAuthentication = async (email: string, password: string, env: Env) => {
     try {
-        const result = await sequelize.query<UserResult>(`
+        const result = await getConnection(env).query<UserResult>(`
             SELECT [email], [password_hash] FROM mag_users WHERE [email] = :email   
             `, {
             replacements: { email },

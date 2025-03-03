@@ -7,6 +7,12 @@ interface LoginCredentials {
     password: string;
 }
 
+interface Env {
+    DATABASE_URL: string;
+    NODE_ENV: string;
+    JWT_SECRET: string;
+}
+
 export interface AuthRequest extends Request {
     user?: {
         userId: string;
@@ -15,25 +21,23 @@ export interface AuthRequest extends Request {
 
 type NextFunction = () => Promise<Response>;
 
-export async function verifyAuthToken(request: AuthRequest, next: NextFunction): Promise<Response> {
+export async function verifyAuthToken(request: AuthRequest, next: NextFunction, env: Env): Promise<Response> {
     const token = request.headers.get('Authorization')?.split(' ')[1];
     if (!token) {
         return new Response('Unauthorized', { status: 401 });
     }
 
     try {
-        if (!process.env.JWT_SECRET) {
-            return new Response('Server configuration error', { status: 500 });
-        }
-        const decoded = jwt.verify(token, process.env.JWT_SECRET) as { userId: string };
+        const decoded = jwt.verify(token, env.JWT_SECRET) as { userId: string };
         request.user = decoded;
         return next();
     } catch (error) {
+        console.log(error);
         return new Response('Invalid token', { status: 401 });
     }
 }
 
-export async function userAuthentication(request: Request): Promise<Response> {
+export async function userAuthentication(request: Request, env: Env): Promise<Response> {
     const body = await request.json();
     const { email, password } = body as LoginCredentials;
 
@@ -42,7 +46,7 @@ export async function userAuthentication(request: Request): Promise<Response> {
             return new Response('Email and password are required', { status: 400 });
         }
 
-        const user = await getUserAuthentication(email, password);
+        const user = await getUserAuthentication(email, password, env);
         if (!user) {
             return new Response('Invalid credentials', { status: 401 });
         }
@@ -52,8 +56,7 @@ export async function userAuthentication(request: Request): Promise<Response> {
             return new Response('Invalid credentials', { status: 401 });
         }
 
-
-        const token = jwt.sign({ userId: user.email }, process.env.JWT_SECRET, { expiresIn: '15m' });
+        const token = jwt.sign({ userId: user.email }, env.JWT_SECRET, { expiresIn: '15m' });
 
         return new Response(JSON.stringify({ auth_token: token }), { 
             status: 200,
