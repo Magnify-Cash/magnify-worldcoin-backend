@@ -14,11 +14,12 @@ interface Env {
 const getUserAuthentication = async (email: string, password: string, env: Env) => {
     try {
         const result = await getConnection(env).query<UserResult>(`
-            SELECT [email], [password_hash] FROM mag_users WHERE [email] = :email   
-            `, {
-            replacements: { email },
-            type: QueryTypes.SELECT
-        })
+            SELECT [email], [password_hash] FROM mag_users WHERE [email] = ${email}   
+            `     
+            , {
+            // replacements: { email },
+            type: QueryTypes.SELECT}
+        )
 
         if (result.length === 0) {
             throw new Error('User not found');
@@ -36,13 +37,13 @@ export const createUser = async (email: string, passwordHash: string, name?: str
         const connection = getConnection(env as Env);
         const result = await connection.query(`
             INSERT INTO mag_users ([email], [password_hash], [username], [created_at]) 
-            VALUES (:email, :passwordHash, :name, GETDATE())
+            VALUES (${email}, ${passwordHash}, ${name}, GETDATE())
         `, {
-            replacements: { 
-                email, 
-                passwordHash,
-                name: name || null 
-            },
+            // replacements: { 
+            //     email, 
+            //     passwordHash,
+            //     name: name || null 
+            // },
             type: QueryTypes.INSERT
         });
 
