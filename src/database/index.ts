@@ -1,4 +1,6 @@
 import { Sequelize } from "sequelize";
+// Add explicit static import for pg
+import pg from 'pg';
 
 interface Env {
     DATABASE_URL: string;
@@ -13,8 +15,10 @@ let sequelizeInstance: Sequelize | null = null;
  */
 export function getConnection(env: Env): Sequelize {
   if (!sequelizeInstance) {
+    // Explicitly set pg for Sequelize
     sequelizeInstance = new Sequelize(env.DATABASE_URL, {
       dialect: 'postgres',
+      dialectModule: pg, // Use the statically imported pg module
       dialectOptions: {
         ssl: {
           require: true,

@@ -23,6 +23,7 @@
 		"wrangler": "^3.108.1"
 	},
 	"dependencies": {
+		"@types/pg": "^8.11.11",
 		"@worldcoin/idkit": "^1.3.0",
 		"bcryptjs": "^3.0.2",
 		"jsonwebtoken": "^9.0.2",
