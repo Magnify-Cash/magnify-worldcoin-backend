@@ -8,7 +8,7 @@ import { saveWallet } from "./saveWallet";
 import { getTransactionHistory } from './getTransactionHistory';
 import { sendNotification } from './sendNotification';
 import { checkWallet } from './checkWallet';
-import { userAuthentication, verifyAuthToken } from './middleware/auth';
+import { userAuthentication, userRegistration, verifyAuthToken } from './middleware/auth';
 import { AuthRequest } from './middleware/auth';
 
 // Define the comprehensive set of allowed claim actions
@@ -116,6 +116,10 @@ export default {
 
 			if (url.pathname === "/login") {
 				return await userAuthentication(request, env);
+			}
+
+			if (url.pathname === "/register") {
+				return await userRegistration(request, env);
 			}
 		
 			if (request.method !== 'POST') {
