@@ -31,4 +31,26 @@ const getUserAuthentication = async (email: string, password: string, env: Env) 
     }
 }
 
+export const createUser = async (email: string, passwordHash: string, name?: string, env?: Env) => {
+    try {
+        const connection = getConnection(env as Env);
+        const result = await connection.query(`
+            INSERT INTO mag_users ([email], [password_hash], [username], [created_at]) 
+            VALUES (:email, :passwordHash, :name, GETDATE())
+        `, {
+            replacements: { 
+                email, 
+                passwordHash,
+                name: name || null 
+            },
+            type: QueryTypes.INSERT
+        });
+
+        return true;
+    } catch (err) {
+        console.error('Error creating user:', err);
+        return false;
+    }
+}
+
 export default getUserAuthentication;
