@@ -20,10 +20,7 @@ export function getConnection(env: Env): Sequelize {
       dialect: 'postgres',
       dialectModule: pg, // Use the statically imported pg module
       dialectOptions: {
-        ssl: {
-          require: true,
-          rejectUnauthorized: false
-        } 
+        ssl: false
       },
       logging: process.env.NODE_ENV !== 'production'
     });
