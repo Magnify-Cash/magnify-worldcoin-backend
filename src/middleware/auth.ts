@@ -71,13 +71,14 @@ export async function userAuthentication(request: Request, env: Env): Promise<Re
         const user = await getUserAuthentication(email, password, env);
         const payload = {
             success: false,
-            auth_token: null,
+            auth_token: null as string | null,
             user: {
                 email: user?.email || null,
-                name: user?.name || null,
+                name: user?.username || null,
                 isAdmin: false
             }
         }
+
         if (!user) {
             return new Response(JSON.stringify(payload), { 
                 status: 403,
@@ -97,7 +98,8 @@ export async function userAuthentication(request: Request, env: Env): Promise<Re
         }
 
         const token = jwt.sign({ userId: user.email }, env.JWT_SECRET, { expiresIn: '15m' });
-        return new Response(JSON.stringify({ auth_token: token }), { 
+        payload.auth_token = token;
+        return new Response(JSON.stringify(payload), { 
             status: 200, headers
         });
     } catch (error) {

@@ -4,7 +4,7 @@ import { getConnection, closeConnection } from "../index";
 interface UserResult {
     email: string;
     password_hash: string;
-    name: string;
+    username: string;
 }
 
 interface Env {
