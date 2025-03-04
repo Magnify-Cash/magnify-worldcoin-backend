@@ -61,17 +61,32 @@ export async function userAuthentication(request: Request, env: Env): Promise<Re
             });
         }
 
-        console.log('Authenticating user:', email);
-        const user = await withTimeout(getUserAuthentication(email, password, env), 5000);
+        const user = await getUserAuthentication(email, password, env);
+        const payload = {
+            success: false,
+            auth_token: null,
+            user: {
+                email: user?.email || null,
+                name: user?.name || null,
+                isAdmin: false
+            }
+        }
         if (!user) {
-            return new Response(JSON.stringify({ error: 'Invalid credentials' }), { 
-                status: 401, headers: { 'Content-Type': 'application/json' }
+            return new Response(JSON.stringify(payload), { 
+                status: 403,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
             });
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password_hash);
         if (!isPasswordValid) {
-            return new Response(JSON.stringify({ error: 'Invalid credentials' }), { 
+            return new Response(JSON.stringify({ 
+                status: 401,
+                success: false,
+                error: 'Invalid credentials' 
+            }), { 
                 status: 401, headers: { 'Content-Type': 'application/json' }
             });
         }
