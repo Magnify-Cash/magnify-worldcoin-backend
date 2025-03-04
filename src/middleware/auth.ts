@@ -70,7 +70,7 @@ export async function userAuthentication(request: Request, env: Env): Promise<Re
 
         const user = await getUserAuthentication(email, password, env);
         const payload = {
-            success: false,
+            success: true,
             auth_token: null as string | null,
             user: {
                 email: user?.email || null,
@@ -80,6 +80,7 @@ export async function userAuthentication(request: Request, env: Env): Promise<Re
         }
 
         if (!user) {
+            payload.success = false;
             return new Response(JSON.stringify(payload), { 
                 status: 403,
                 headers
