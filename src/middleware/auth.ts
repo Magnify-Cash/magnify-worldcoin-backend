@@ -34,155 +34,98 @@ export async function verifyAuthToken(request: AuthRequest, next: NextFunction, 
     try {
         const decoded = jwt.verify(token, env.JWT_SECRET) as { userId: string };
         request.user = decoded;
-        return next();
+        return await next();
     } catch (error) {
-        console.log(error);
+        console.error('JWT verification error:', error);
         return new Response('Invalid token', { status: 401 });
     }
 }
 
+async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+    return Promise.race([
+        promise,
+        new Promise<T>((_, reject) =>
+            setTimeout(() => reject(new Error('Request timed out')), ms)
+        ),
+    ]);
+}
+
 export async function userAuthentication(request: Request, env: Env): Promise<Response> {
     try {
-        // Try to parse the JSON body
-        let body;
-        try {
-            body = await request.json();
-        } catch (jsonError) {
-            console.error('Error parsing JSON:', jsonError);
-            return new Response(JSON.stringify({ error: 'Invalid JSON format in request body' }), { 
-                status: 400,
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-        }
-
+        const body = await request.json();
         const { email, password } = body as LoginCredentials;
 
         if (!email || !password) {
             return new Response(JSON.stringify({ error: 'Email and password are required' }), { 
-                status: 400,
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                status: 400, headers: { 'Content-Type': 'application/json' }
             });
         }
 
-        const user = await getUserAuthentication(email, password, env);
+        console.log('Authenticating user:', email);
+        const user = await withTimeout(getUserAuthentication(email, password, env), 5000);
         if (!user) {
             return new Response(JSON.stringify({ error: 'Invalid credentials' }), { 
-                status: 401,
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                status: 401, headers: { 'Content-Type': 'application/json' }
             });
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password_hash);
         if (!isPasswordValid) {
             return new Response(JSON.stringify({ error: 'Invalid credentials' }), { 
-                status: 401,
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                status: 401, headers: { 'Content-Type': 'application/json' }
             });
         }
 
         const token = jwt.sign({ userId: user.email }, env.JWT_SECRET, { expiresIn: '15m' });
-
         return new Response(JSON.stringify({ auth_token: token }), { 
-            status: 200,
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            status: 200, headers: { 'Content-Type': 'application/json' }
         });
-
     } catch (error) {
         console.error('Error during user authentication:', error);
         return new Response(JSON.stringify({ error: 'Internal Server Error' }), { 
-            status: 500,
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            status: 500, headers: { 'Content-Type': 'application/json' }
         });
     }
 }
 
 export async function userRegistration(request: Request, env: Env): Promise<Response> {
     try {
-        // Try to parse the JSON body
-        let body;
-        try {
-            body = await request.json();
-        } catch (jsonError) {
-            console.error('Error parsing JSON:', jsonError);
-            return new Response(JSON.stringify({ error: 'Invalid JSON format in request body' }), { 
-                status: 400,
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-        }
-
+        const body = await request.json();
         const { email, password, name } = body as RegisterCredentials;
 
         if (!email || !password) {
             return new Response(JSON.stringify({ error: 'Email and password are required' }), { 
-                status: 400,
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                status: 400, headers: { 'Content-Type': 'application/json' }
             });
         }
 
-        // Check if user already exists
-        try {
-            const existingUser = await getUserAuthentication(email, '', env);
-            if (existingUser) {
-                return new Response(JSON.stringify({ error: 'User with this email already exists' }), { 
-                    status: 409,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-            }
-        } catch (error) {
-            console.error('Error checking user credentials: ', error);
+        console.log('Checking if user exists:', email);
+        const existingUser = await withTimeout(getUserAuthentication(email, '', env), 5000);
+        if (existingUser) {
+            return new Response(JSON.stringify({ error: 'User with this email already exists' }), { 
+                status: 409, headers: { 'Content-Type': 'application/json' }
+            });
         }
 
-        // Hash the password
         const saltRounds = 10;
         const passwordHash = await bcrypt.hash(password, saltRounds);
 
-        // Create new user in database
-        const result = await createUser(email, passwordHash, name, env);
-        
+        console.log('Creating user:', email);
+        const result = await withTimeout(createUser(email, passwordHash, name, env), 5000);
         if (!result) {
             return new Response(JSON.stringify({ error: 'Failed to create user' }), { 
-                status: 500,
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                status: 500, headers: { 'Content-Type': 'application/json' }
             });
         }
 
-        // Generate JWT token
         const token = jwt.sign({ userId: email }, env.JWT_SECRET, { expiresIn: '15m' });
-
         return new Response(JSON.stringify({ auth_token: token }), {
-            status: 201,
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            status: 201, headers: { 'Content-Type': 'application/json' }
         });
-
     } catch (error) {
         console.error('Error during user registration:', error);
         return new Response(JSON.stringify({ error: 'Internal Server Error' }), { 
-            status: 500,
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            status: 500, headers: { 'Content-Type': 'application/json' }
         });
     }
 }
