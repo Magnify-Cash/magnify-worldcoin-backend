@@ -75,12 +75,13 @@ export async function userAuthentication(request: Request, env: Env): Promise<Re
             user: {
                 email: user?.email || null,
                 name: user?.username || null,
-                isAdmin: false
+                isAdmin: true
             }
         }
 
         if (!user) {
             payload.success = false;
+            payload.user.isAdmin = false;
             return new Response(JSON.stringify(payload), { 
                 status: 403,
                 headers
