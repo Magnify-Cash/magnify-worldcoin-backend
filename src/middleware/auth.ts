@@ -23,12 +23,19 @@ export interface AuthRequest extends Request {
     };
 }
 
+const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    "Content-Type": "application/json",
+  };
+
 type NextFunction = () => Promise<Response>;
 
 export async function verifyAuthToken(request: AuthRequest, next: NextFunction, env: Env): Promise<Response> {
     const token = request.headers.get('Authorization')?.split(' ')[1];
     if (!token) {
-        return new Response('Unauthorized', { status: 401 });
+        return new Response('Unauthorized', { status: 401, headers });
     }
 
     try {
@@ -37,7 +44,7 @@ export async function verifyAuthToken(request: AuthRequest, next: NextFunction, 
         return await next();
     } catch (error) {
         console.error('JWT verification error:', error);
-        return new Response('Invalid token', { status: 401 });
+        return new Response('Invalid token', { status: 401, headers });
     }
 }
 
@@ -57,7 +64,7 @@ export async function userAuthentication(request: Request, env: Env): Promise<Re
 
         if (!email || !password) {
             return new Response(JSON.stringify({ error: 'Email and password are required' }), { 
-                status: 400, headers: { 'Content-Type': 'application/json' }
+                status: 400, headers
             });
         }
 
@@ -74,9 +81,7 @@ export async function userAuthentication(request: Request, env: Env): Promise<Re
         if (!user) {
             return new Response(JSON.stringify(payload), { 
                 status: 403,
-                headers: {
-                    'Content-Type': 'application/json'
-                }
+                headers
             });
         }
 
@@ -87,18 +92,18 @@ export async function userAuthentication(request: Request, env: Env): Promise<Re
                 success: false,
                 error: 'Invalid credentials' 
             }), { 
-                status: 401, headers: { 'Content-Type': 'application/json' }
+                status: 401, headers
             });
         }
 
         const token = jwt.sign({ userId: user.email }, env.JWT_SECRET, { expiresIn: '15m' });
         return new Response(JSON.stringify({ auth_token: token }), { 
-            status: 200, headers: { 'Content-Type': 'application/json' }
+            status: 200, headers
         });
     } catch (error) {
         console.error('Error during user authentication:', error);
         return new Response(JSON.stringify({ error: 'Internal Server Error' }), { 
-            status: 500, headers: { 'Content-Type': 'application/json' }
+            status: 500, headers
         });
     }
 }
@@ -110,7 +115,7 @@ export async function userRegistration(request: Request, env: Env): Promise<Resp
 
         if (!email || !password) {
             return new Response(JSON.stringify({ error: 'Email and password are required' }), { 
-                status: 400, headers: { 'Content-Type': 'application/json' }
+                status: 400, headers
             });
         }
 
@@ -118,7 +123,7 @@ export async function userRegistration(request: Request, env: Env): Promise<Resp
         const existingUser = await withTimeout(getUserAuthentication(email, '', env), 5000);
         if (existingUser) {
             return new Response(JSON.stringify({ error: 'User with this email already exists' }), { 
-                status: 409, headers: { 'Content-Type': 'application/json' }
+                status: 409, headers
             });
         }
 
@@ -129,18 +134,18 @@ export async function userRegistration(request: Request, env: Env): Promise<Resp
         const result = await withTimeout(createUser(email, passwordHash, name, env), 5000);
         if (!result) {
             return new Response(JSON.stringify({ error: 'Failed to create user' }), { 
-                status: 500, headers: { 'Content-Type': 'application/json' }
+                status: 500, headers
             });
         }
 
         const token = jwt.sign({ userId: email }, env.JWT_SECRET, { expiresIn: '15m' });
         return new Response(JSON.stringify({ auth_token: token }), {
-            status: 201, headers: { 'Content-Type': 'application/json' }
+            status: 201, headers
         });
     } catch (error) {
         console.error('Error during user registration:', error);
         return new Response(JSON.stringify({ error: 'Internal Server Error' }), { 
-            status: 500, headers: { 'Content-Type': 'application/json' }
+            status: 500, headers
         });
     }
 }
