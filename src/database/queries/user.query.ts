@@ -4,6 +4,7 @@ import { getConnection, closeConnection } from "../index";
 interface UserResult {
     email: string;
     password_hash: string;
+    name: string;
 }
 
 interface Env {
@@ -18,7 +19,12 @@ const getUserAuthentication = async (email: string, password: string, env: Env) 
         
         // Set a timeout for query execution
         const queryPromise = connection.query<UserResult>(
-            `SELECT email, password_hash FROM mag_users WHERE email = $1`,
+            `select email, username, password_hash
+            FROM mag_users
+            join mag_user_roles on mag_users.user_id = mag_user_roles.user_id
+            where mag_user_roles.role_id = 1
+            AND mag_users.email = $1;
+            `,
             {
                 bind: [email],
                 type: QueryTypes.SELECT
@@ -33,9 +39,9 @@ const getUserAuthentication = async (email: string, password: string, env: Env) 
         // Race between query and timeout
         const result = await Promise.race([queryPromise, timeoutPromise]) as UserResult[];
 
-        if (result.length === 0) {
-            throw new Error('User not found');
-        }
+        // if (result.length === 0) {
+        //     throw new Error('User not found');
+        // }
         
         const user = result[0];
         return user;

@@ -69,9 +69,18 @@ export async function userAuthentication(request: Request, env: Env): Promise<Re
         }
 
         const user = await getUserAuthentication(email, password, env);
+        const payload = {
+            success: false,
+            auth_token: null,
+            user: {
+                email: user?.email || null,
+                name: user?.name || null,
+                isAdmin: false
+            }
+        }
         if (!user) {
-            return new Response(JSON.stringify({ error: 'Invalid credentials' }), { 
-                status: 401,
+            return new Response(JSON.stringify(payload), { 
+                status: 403,
                 headers: {
                     'Content-Type': 'application/json'
                 }
