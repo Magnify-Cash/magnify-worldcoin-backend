@@ -13,7 +13,8 @@ interface Env {
 
 const getUserAuthentication = async (email: string, password: string, env: Env) => {
     try {
-        const result = await getConnection(env).query<UserResult>(`
+        const connection = await getConnection(env);
+        const result = await connection.query<UserResult>(`
             SELECT email, password_hash FROM mag_users WHERE email = '${email}'   
             `     
             , {
@@ -34,7 +35,7 @@ const getUserAuthentication = async (email: string, password: string, env: Env) 
 
 export const createUser = async (email: string, passwordHash: string, name?: string, env?: Env) => {
     try {
-        const connection = getConnection(env as Env);
+        const connection = await getConnection(env as Env);
         const result = await connection.query(`
              INSERT INTO mag_users (email, password_hash, username) 
             VALUES ('${email}', '${passwordHash}', '${name}')
