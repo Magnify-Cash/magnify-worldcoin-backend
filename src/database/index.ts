@@ -11,9 +11,10 @@ let sequelizeInstance: Sequelize | null = null;
 
 /**
  * Initialize and get the database connection
+ * @param env Environment variables
  * @returns Sequelize instance
  */
-export function getConnection(env: Env): Sequelize {
+export async function getConnection(env: Env): Promise<Sequelize> {
   if (!sequelizeInstance) {
     // Explicitly set pg for Sequelize
     sequelizeInstance = new Sequelize(env.DATABASE_URL, {
@@ -22,8 +23,18 @@ export function getConnection(env: Env): Sequelize {
       dialectOptions: {
         ssl: false
       },
-      logging: process.env.NODE_ENV !== 'production'
     });
+    
+    // Authenticate the connection when it's first created
+    try {
+      await sequelizeInstance.authenticate();
+      console.log('Database connection has been established successfully.');
+    } catch (error) {
+      console.error('Unable to connect to the database:', error);
+      // Reset the instance so that future calls can try to reconnect
+      sequelizeInstance = null;
+      throw error;
+    }
   }
   return sequelizeInstance;
 }
