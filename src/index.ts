@@ -10,7 +10,7 @@ import { sendNotification } from './sendNotification';
 import { checkWallet } from './checkWallet';
 import { userAuthentication, userRegistration, verifyAuthToken } from './middleware/auth';
 import { AuthRequest } from './middleware/auth';
-import { getUsersController, grantAdminAccessController } from './users';
+import { getUsersController, grantAdminAccessController, verifyAuthTokenController } from './users';
 
 // Define the comprehensive set of allowed claim actions
 type ClaimAction =
@@ -135,6 +135,10 @@ export default {
 					const response = await grantAdminAccessController(request, env);
 					return new Response(response.body, { status: response.status, headers: { ...CORS_HEADERS } });
 				}, env);
+			}
+
+			if (url.pathname === "/verifyAuthToken") {
+				return await verifyAuthTokenController(request, env);
 			}
 		
 			if (request.method !== 'POST') {

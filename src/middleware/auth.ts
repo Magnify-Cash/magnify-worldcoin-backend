@@ -99,7 +99,7 @@ export async function userAuthentication(request: Request, env: Env): Promise<Re
             });
         }
 
-        const token = jwt.sign({ userId: user.email }, env.JWT_SECRET, { expiresIn: '15m' });
+        const token = jwt.sign({ userId: user.email }, env.JWT_SECRET, { expiresIn: '24h' });
         payload.auth_token = token;
         return new Response(JSON.stringify(payload), { 
             status: 200, headers
@@ -142,7 +142,7 @@ export async function userRegistration(request: Request, env: Env): Promise<Resp
             });
         }
 
-        const token = jwt.sign({ userId: email }, env.JWT_SECRET, { expiresIn: '15m' });
+        const token = jwt.sign({ userId: email }, env.JWT_SECRET, { expiresIn: '24h' });
         return new Response(JSON.stringify({ auth_token: token }), {
             status: 201, headers
         });
