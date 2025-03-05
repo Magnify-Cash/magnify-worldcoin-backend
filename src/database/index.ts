@@ -16,7 +16,11 @@ export async function getConnection(env: Env): Promise<Sequelize> {
     dialect: 'postgres',
     dialectModule: pg, // Use the statically imported pg module
     dialectOptions: {
-      ssl: false,
+      ssl: 
+      {
+        require: true,
+        rejectUnauthorized: true
+      },
       // Add statement timeout to prevent hanging queries
       statement_timeout: 10000, // 10 seconds
       query_timeout: 10000, // 10 seconds
