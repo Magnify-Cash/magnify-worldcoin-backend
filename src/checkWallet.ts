@@ -7,7 +7,7 @@ interface Env {
   
     const headers = {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type",
       "Content-Type": "application/json",
     };
@@ -16,15 +16,13 @@ interface Env {
       return new Response(null, { headers });
     }
   
-    if (request.method !== "POST") {
-      return new Response(JSON.stringify({ error: "Method not allowed" }), { status: 405, headers });
-    }
-  
     try {
-      const { wallet } = (await request.json()) as { wallet: string };
+      // Get wallet from query parameter instead of request body
+      const url = new URL(request.url);
+      const wallet = url.searchParams.get('wallet');
   
       if (!wallet) {
-        return new Response(JSON.stringify({ error: "Missing wallet field" }), { status: 400, headers });
+        return new Response(JSON.stringify({ error: "Missing wallet parameter" }), { status: 400, headers });
       }
   
       const supabaseResponse = await fetch(`${env.SUPABASE_URL}/rest/v1/user_wallets?wallet=eq.${wallet}`, {
