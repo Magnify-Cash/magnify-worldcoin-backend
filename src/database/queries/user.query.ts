@@ -90,4 +90,48 @@ export const createUser = async (email: string, passwordHash: string, name?: str
     }
 }
 
+export const getAllUsers = async (env: Env) => {
+    let connection = null;
+    try {
+        connection = await getConnection(env);
+        const result = await connection.query(
+            ` SELECT email, username, mag_users.user_id
+              FROM mag_users
+              LEFT JOIN mag_user_roles ON mag_users.user_id = mag_user_roles.user_id
+              WHERE mag_user_roles.user_id IS NULL;
+`,
+            {
+                type: QueryTypes.SELECT
+            }
+        );
+        return result;
+    } catch (err) {
+        console.error('Error getting all users:', err);
+        throw err;
+    } finally { 
+        if (connection) {
+            await closeConnection(connection);
+        }
+    }
+}
+
+export const grantAdminAccess = async (userId: string, env: Env) => {
+    let connection = null;
+    try {
+        connection = await getConnection(env);
+        const result = await connection.query(
+            `INSERT INTO mag_user_roles (user_id, role_id) VALUES ($1, 1)`,
+            { bind: [userId], type: QueryTypes.INSERT }
+        );
+    } catch(err) {
+        console.error('Error granting admin access:', err);
+        throw err;
+    } finally {
+        if (connection) {
+            await closeConnection(connection);
+        }
+    }
+
+}
+
 export default getUserAuthentication;
