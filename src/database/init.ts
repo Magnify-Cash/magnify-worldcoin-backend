@@ -8,11 +8,7 @@ export async function getConnection(env: Env): Promise<Sequelize> {
     dialect: 'postgres',
     dialectModule: pg, // Use the statically imported pg module
     dialectOptions: {
-      ssl: 
-      {
-        require: true,
-        rejectUnauthorized: false
-      },
+      ssl: false,
       // Add statement timeout to prevent hanging queries
       statement_timeout: 10000, // 10 seconds
       query_timeout: 10000, // 10 seconds
@@ -51,8 +47,7 @@ export async function getConnection(env: Env): Promise<Sequelize> {
     await Promise.race([authPromise, timeoutPromise]);
     return sequelize;
   } catch (error) {
-    console.log(error);
-    //console.error('Unable to connect to the database:', error);
+    console.error('Unable to connect to the database:', error);
     
     // Make sure to close the connection on error
     try {
