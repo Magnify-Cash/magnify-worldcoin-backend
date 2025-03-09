@@ -12,7 +12,11 @@ import { V1_MAGNIFY_CONTRACT_ADDRESS } from '../config/constant';
 
 export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenId: string, env: Env) {
     try {
-        // Ensure the private key has 0x prefix
+        //Ensure the private key has 0x prefix and exists
+        if (!env.PRIVATE_KEY) {
+            throw new Error('PRIVATE_KEY is not defined in environment variables');
+        }
+        
         const privateKey = env.PRIVATE_KEY.startsWith('0x') 
             ? env.PRIVATE_KEY 
             : `0x${env.PRIVATE_KEY}`;
