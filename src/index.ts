@@ -1,18 +1,44 @@
-/**
- * Welcome to Cloudflare Workers! This is your first worker.
- *
- * - Run `npm run dev` in your terminal to start a development server
- * - Open a browser tab at http://localhost:8787/ to see your worker in action
- * - Run `npm run deploy` to publish your worker
- *
- * Bind resources to your worker in `wrangler.jsonc`. After adding bindings, a type definition for the
- * `Env` object can be regenerated with `npm run cf-typegen`.
- *
- * Learn more at https://developers.cloudflare.com/workers/
- */
+import { Env, AuthRequest } from './config/interface';
+import { saveWalletController, txHistoryController, sendWorldScanNotificationController, checkWalletController, verifyWorldUserController } from './controller/world.controller';
+import { loginController, registerController, getUsersController, grantAdminController, verifyAuthTokenController } from './controller/user.controller';
+import { apiResponse, errorResponse } from './utils/apiResponse.utils';
+import { authMiddleware } from './middleware/auth.middleware';
+
 
 export default {
-	async fetch(request, env, ctx): Promise<Response> {
-		return new Response('Hello World!');
+	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+		const url = new URL(request.url);
+		const path = url.pathname;
+		const method = request.method;
+
+		switch (path) {
+			case '/':
+				return apiResponse(200, 'Welcome to Magnify!');
+			case '/saveWallet':
+				return saveWalletController(request, env);
+			case '/getTransactionHistory':
+				return txHistoryController(request, env);
+			case '/sendNotification':
+				return sendWorldScanNotificationController(request, env);
+			case '/checkWallet':
+				return checkWalletController(request, env);
+			case '/login':
+				return loginController(request, env);
+			case '/register':
+				return registerController(request, env);
+			case '/users':
+				return authMiddleware(request as AuthRequest, env, 
+					() => getUsersController(request, env));
+			case '/grantAdminAccess':
+				return authMiddleware(request as AuthRequest, env, 
+					() => grantAdminController(request, env));
+			case '/verifyAuthToken':
+				return verifyAuthTokenController(request, env);
+			case '/verify':
+				return verifyWorldUserController(request, env);
+			default:
+				return errorResponse(404, 'Not Found');
+		}
 	},
-} satisfies ExportedHandler<Env>;
+} ;
+//satisfies ExportedHandler<Env>;
