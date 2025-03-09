@@ -46,7 +46,7 @@ export async function txHistoryController(request: Request, env: Env) {
     try {
         const url = new URL(request.url);
         const walletAddress = url.searchParams.get("wallet");
-        const result = await axios.get<WorldScanTransaction[]>(`${WORLDSCAN_API_BASE_URL}${WORLDSCAN_PATH.api}`, {
+        const result = await axios.get<{ result: WorldScanTransaction[] }>(`${WORLDSCAN_API_BASE_URL}${WORLDSCAN_PATH.api}`, {
             params: {
                 module: "account",
                 action: "tokentx",
@@ -57,7 +57,7 @@ export async function txHistoryController(request: Request, env: Env) {
             }
         });
 
-        const filteredTransactions: WorldScanTransaction[] = result.data.filter(tx =>
+        const filteredTransactions: WorldScanTransaction[] = result.data.result.filter((tx: WorldScanTransaction) =>
             contractAddresses.includes(tx.to.toLowerCase()) || contractAddresses.includes(tx.from.toLowerCase())
           );
       
@@ -72,6 +72,7 @@ export async function txHistoryController(request: Request, env: Env) {
           }));
         return apiResponse(200, 'Transaction history retrieved', formattedTransactions);
     } catch (error) {
+        console.log(error);
         return errorResponse(500, 'Failed to retrieve transaction history');
     }
 }
