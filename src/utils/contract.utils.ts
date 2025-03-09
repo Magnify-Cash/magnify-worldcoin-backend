@@ -12,7 +12,12 @@ import { V1_MAGNIFY_CONTRACT_ADDRESS } from '../config/constant';
 
 export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenId: string, env: Env) {
     try {
-        const account = privateKeyToAccount(env.PRIVATE_KEY as Hex.Hex);
+        // Ensure the private key has 0x prefix
+        const privateKey = env.PRIVATE_KEY.startsWith('0x') 
+            ? env.PRIVATE_KEY 
+            : `0x${env.PRIVATE_KEY}`;
+            
+        const account = privateKeyToAccount(privateKey as Hex.Hex);
         const client = createWalletClient({
             account,
             chain: worldchain,
