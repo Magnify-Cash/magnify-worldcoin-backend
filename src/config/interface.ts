@@ -1,12 +1,9 @@
 export interface Env {
 	PRIVATE_KEY: string; // Wallet private key for transactions
 	WORLD_COIN_APP_ID: string; // World ID verification app identifier
-	SUPABASE_URL: string; // Supabase URL for database interactions
-	SUPABASE_SERVICE_ROLE_KEY: string; // Supabase service role key for authentication
 	WORLDSCAN_API_KEY: string; // Worldscan API key
 	WORLDCOIN_API_KEY: string; // Worldcoin API key
 	DATABASE_URL: string;
-	NODE_ENV: string;
 	JWT_SECRET: string; //
 }
 
@@ -62,3 +59,20 @@ export interface AuthRequest extends Request {
         userId: string;
     };
 }
+
+export type ClaimAction =
+	| 'mint-orb-verified-nft'
+	| 'mint-passport-verified-nft'
+	| 'mint-device-verified-nft'
+	| 'upgrade-orb-verified-nft'
+	| 'upgrade-passport-verified-nft'
+	| 'upgrade-device-verified-nft';
+
+export const ACTION_TO_TIER: Record<ClaimAction, number> = {
+    'mint-device-verified-nft': 1,
+    'upgrade-device-verified-nft': 1,
+    'mint-passport-verified-nft': 2,
+    'upgrade-passport-verified-nft': 2,
+    'mint-orb-verified-nft': 3,
+    'upgrade-orb-verified-nft': 3,
+    };

@@ -4,7 +4,10 @@ import { Env } from "../config/interface";
 import axios from "axios";
 import { WorldScanTransaction, FormattedTransaction } from "../config/interface";
 import { WORLDSCAN_API_BASE_URL, WORLDSCAN_PATH, USDC_ADDRESS, V2_MAGNIFY_CONTRACT_ADDRESS,V1_MAGNIFY_CONTRACT_ADDRESS } from "../config/constant";
-import { verifyCloudProof, IVerifyResponse, ISuccessResult } from '@worldcoin/minikit-js'
+import { ISuccessResult} from '@worldcoin/idkit'
+import { hashToField } from "../utils/hashUtils";
+import { mintNFT } from "../utils/contract.utils";
+import { ClaimAction } from "../config/interface";
 
 const contractAddresses = [
     V1_MAGNIFY_CONTRACT_ADDRESS, 
@@ -109,21 +112,44 @@ export async function sendWorldScanNotificationController(request: Request, env:
 
 export async function verifyWorldUserController(request: Request, env: Env) {
     try {
-        const { payload, action, signal } = await request.json() as { 
+        const { payload, action, signal, tokenId } = await request.json() as {
             payload: ISuccessResult,
             action: string,
-            signal: string
+            signal: string,
+            tokenId: string
         };
+        //console.log(`payload: ${JSON.stringify(payload)}, action: ${action}, signal: ${signal}`);
+
         if (!payload || !action || !signal) {
             return errorResponse(400, 'Missing required fields: payload, action, signal');
         }
-        
-        const verified = (await verifyCloudProof(payload, env.WORLD_COIN_APP_ID as `app_${string}`, action, signal)) as IVerifyResponse
-        if (verified.success) {
-            return apiResponse(200, 'User verified successfully');
+        const verifyResponse = await axios.post(
+            `https://developer.worldcoin.org/api/v2/verify/app_1801cb2a3556a82b82e2bf667a5f3c8b`,
+            {
+                nullifier_hash: payload.nullifier_hash,
+                proof: payload.proof,
+                merkle_root: payload.merkle_root,
+                verification_level: payload.verification_level,
+                action: action,
+                signal_hash: hashToField(signal ?? '').digest,
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                }
+            }
+        );
+        if (!verifyResponse) {
+            return errorResponse(400, 'Failed to verify user');
         }
-        return errorResponse(400, 'User verification failed');
+        const transactionHash = await mintNFT(action as ClaimAction, signal as `0x${string}` ,tokenId, env);
+        if (!transactionHash) {
+            return errorResponse(400, 'Failed to mint or upgrade NFT');
+        }
+        return apiResponse(200, 'User verified successfully', { ...verifyResponse.data, transactionHash });
     } catch (error) {
+        console.error("Verification Error:", error);
         return errorResponse(500, 'Error verifying world user');
     }
 }

@@ -9,6 +9,7 @@ export const USDC_ADDRESS = "0x79A02482A880bCE3F13e09Da970dC34db4CD24d1"
 export const V1_MAGNIFY_CONTRACT_ADDRESS = "0x4E52d9e8d2F70aD1805084BA4fa849dC991E7c88"
 export const V2_MAGNIFY_CONTRACT_ADDRESS = "0x93dbB2d447F0086aF60B2becc66598fe3D9135A1"
 
+
 export const WORLDSCAN_API_BASE_URL = "https://api.worldscan.org"
 export const WORLDSCAN_PATH = {
 	api: "/api",

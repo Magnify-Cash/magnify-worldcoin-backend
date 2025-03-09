@@ -3,13 +3,12 @@ import { saveWalletController, txHistoryController, sendWorldScanNotificationCon
 import { loginController, registerController, getUsersController, grantAdminController, verifyAuthTokenController } from './controller/user.controller';
 import { apiResponse, errorResponse } from './utils/apiResponse.utils';
 import { authMiddleware } from './middleware/auth.middleware';
-
+import { getAnnouncementsController } from './controller/announcement.controller';
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 		const url = new URL(request.url);
 		const path = url.pathname;
-		const method = request.method;
 
 		switch (path) {
 			case '/':
@@ -36,6 +35,9 @@ export default {
 				return verifyAuthTokenController(request, env);
 			case '/verify':
 				return verifyWorldUserController(request, env);
+			case '/announcements':
+				return authMiddleware(request as AuthRequest, env, 
+					() => getAnnouncementsController(request, env));
 			default:
 				return errorResponse(404, 'Not Found');
 		}
