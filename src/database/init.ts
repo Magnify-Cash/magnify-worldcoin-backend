@@ -11,7 +11,7 @@ export async function getConnection(env: Env): Promise<Sequelize> {
       ssl: 
       {
         require: true,
-        rejectUnauthorized: true
+        rejectUnauthorized: false
       },
       // Add statement timeout to prevent hanging queries
       statement_timeout: 10000, // 10 seconds
