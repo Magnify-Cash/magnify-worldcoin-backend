@@ -124,7 +124,7 @@ export async function verifyWorldUserController(request: Request, env: Env) {
             return errorResponse(400, 'Missing required fields: payload, action, signal');
         }
         const verifyResponse = await axios.post(
-            `https://developer.worldcoin.org/api/v2/verify/app_1801cb2a3556a82b82e2bf667a5f3c8b`,
+            `https://developer.worldcoin.org/api/v2/verify/${env.WORLD_COIN_APP_ID}`,
             {
                 nullifier_hash: payload.nullifier_hash,
                 proof: payload.proof,
