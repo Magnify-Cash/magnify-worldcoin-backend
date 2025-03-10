@@ -13,8 +13,9 @@ import { V1_MAGNIFY_CONTRACT_ADDRESS } from '../config/constant';
 export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenId: string, env: Env) {
     try {
 
+        console.log("----------")
         console.log('Raw PRIVATE_KEY:', JSON.stringify(env.PRIVATE_KEY));
-
+        console.log("----------")
 
         let privateKey = String(env.PRIVATE_KEY || '').trim();
 
