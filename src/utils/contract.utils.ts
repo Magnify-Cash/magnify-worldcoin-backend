@@ -12,9 +12,24 @@ import { V1_MAGNIFY_CONTRACT_ADDRESS } from '../config/constant';
 
 export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenId: string, env: Env) {
     try {
-        if (!env.PRIVATE_KEY) {
-            throw new Error('PRIVATE_KEY is not defined in environment variables');
-        }        
+
+        console.log('Raw PRIVATE_KEY:', JSON.stringify(env.PRIVATE_KEY));
+
+
+        let privateKey = String(env.PRIVATE_KEY || '').trim();
+
+        if (!privateKey) {
+            throw new Error('PRIVATE_KEY is undefined or empty after sanitization');
+        }
+
+        if (!privateKey.startsWith('0x')) {
+            privateKey = `0x${privateKey}`;
+        }
+
+        // Validate key length (should be 66 characters, including '0x')
+        if (privateKey.length !== 66) {
+            throw new Error(`Invalid PRIVATE_KEY length: expected 66 characters, got ${privateKey.length}`);
+        }
 
         const account = privateKeyToAccount(`0x${env.PRIVATE_KEY}`);
         console.log(account)
