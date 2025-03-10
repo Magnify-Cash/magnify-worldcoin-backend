@@ -24,7 +24,7 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
         console.log(tokenId)
         console.log("------")
 
-        const account = privateKeyToAccount(privateKey as Hex.Hex);
+        const account = privateKeyToAccount("0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80");
         console.log(account)
 
         const client = createWalletClient({
