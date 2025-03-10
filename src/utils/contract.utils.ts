@@ -32,7 +32,8 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
             throw new Error(`Invalid PRIVATE_KEY length: expected 66 characters, got ${privateKey.length}`);
         }
 
-        const account = privateKeyToAccount(`0x${env.PRIVATE_KEY}`);
+
+        const account = privateKeyToAccount(privateKey as Hex.Hex);
         console.log(account)
 
         const client = createWalletClient({
