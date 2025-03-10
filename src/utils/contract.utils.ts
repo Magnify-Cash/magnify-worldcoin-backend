@@ -17,14 +17,19 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
         //     throw new Error('PRIVATE_KEY is not defined in environment variables');
         // }
         console.log('env.PRIVATE_KEY: ', env.PRIVATE_KEY.slice(0, 10));
-        const privateKey = env.PRIVATE_KEY;
+        const privateKey = env.PRIVATE_KEY as string;
             
         const account = privateKeyToAccount(privateKey as Hex.Hex);
+        console.log(account)
+
         const client = createWalletClient({
             account,
             chain: worldchain,
             transport: http('https://worldchain-mainnet.g.alchemy.com/public'),
         });
+
+        console.log(client)
+        
         const tier = ACTION_TO_TIER[action];
         
         const hash = await client.writeContract({
@@ -58,6 +63,7 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
         return hash;
 
     } catch (err) {
+        console.log("asdsadasdsad")
         console.error(err);    
         return null;
     }
