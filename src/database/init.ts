@@ -1,16 +1,10 @@
 import { Sequelize } from "sequelize";
-// Add explicit static import for pg
 import pg from 'pg';
+import { Env } from '../config/interface';
 
-interface Env {
-    DATABASE_URL: string;
-    NODE_ENV: string;
-}
-
-// In Cloudflare Workers, we should avoid singleton patterns 
-// since isolates can be reused with different states
-// Instead, create fresh connections for each request
 export async function getConnection(env: Env): Promise<Sequelize> {
+
+  console.log('DATABASE_URL: ', env.DATABASE_URL);
   // Create a new connection for each request
   const sequelize = new Sequelize(env.DATABASE_URL, {
     dialect: 'postgres',
