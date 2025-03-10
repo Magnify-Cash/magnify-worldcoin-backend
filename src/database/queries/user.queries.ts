@@ -1,18 +1,10 @@
 import { QueryTypes } from 'sequelize';
-import { getConnection, closeConnection } from "../index";
+import { getConnection, closeConnection } from '../init';
+import { Env } from '../../config/interface';
+import { UserResult } from '../../config/interface';
 
-interface UserResult {
-    email: string;
-    password_hash: string;
-    username: string;
-}
 
-interface Env {
-    DATABASE_URL: string;
-    NODE_ENV: string;
-}
-
-const getUserAuthentication = async (email: string, password: string, env: Env) => {
+export const getUserAuthentication = async (email: string, password: string, env: Env) => {
     let connection = null;
     try {
         connection = await getConnection(env);
@@ -62,23 +54,22 @@ export const createUser = async (email: string, passwordHash: string, name?: str
         connection = await getConnection(env as Env);
         
         // Set a timeout for query execution
-        const queryPromise = connection.query(
-            `INSERT INTO mag_users (email, password_hash, username) VALUES ($1, $2, $3)`,
+        const result = await connection.query(
+            `WITH ins AS ( 
+            INSERT INTO mag_users (email, password_hash, username)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (email) DO NOTHING
+            RETURNING user_id, email 
+            )
+            SELECT user_id FROM ins;
+            `,
             {
                 bind: [email, passwordHash, name || null],
                 type: QueryTypes.INSERT
             }
         );
         
-        // Create a timeout promise
-        const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Query timeout')), 5000);
-        });
-        
-        // Race between query and timeout
-        await Promise.race([queryPromise, timeoutPromise]);
-        
-        return true;
+        return result[0];
     } catch (err) {
         console.error('Error creating user:', err);
         throw err; // Re-throw to properly handle Promise rejection
@@ -131,7 +122,45 @@ export const grantAdminAccess = async (userId: string, env: Env) => {
             await closeConnection(connection);
         }
     }
-
 }
 
-export default getUserAuthentication;
+export const saveWallet = async (wallet: string, notification: boolean, env: Env) => {
+    let connection = null;
+    try {
+        connection = await getConnection(env);
+        const result = await connection.query(
+            `INSERT INTO user_wallets (wallet, notification) VALUES ($1, $2)
+             RETURNING *;
+            `,
+            { bind: [wallet, notification], type: QueryTypes.INSERT }
+        ); 
+        return result[0];
+    } catch(err) {
+        console.error('Error saving wallet:', err);
+        throw err;
+    } finally {
+        if (connection) {
+            await closeConnection(connection);
+        }
+    }
+}
+
+export const checkWallet = async (wallet: string, env: Env) => {
+    let connection = null;
+    try {
+        connection = await getConnection(env);
+        const result = await connection.query(
+            `SELECT id FROM user_wallets WHERE wallet = $1`,
+            { bind: [wallet], type: QueryTypes.SELECT }
+        );
+        return result[0];
+    } catch(err) {
+        console.error('Error checking wallet:', err);
+        throw err;
+    } finally {
+        if (connection) {
+            await closeConnection(connection);
+        }
+    }
+}   
+
