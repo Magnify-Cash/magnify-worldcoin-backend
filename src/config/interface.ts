@@ -5,6 +5,7 @@ export interface Env {
 	WORLDCOIN_API_KEY: string; // Worldcoin API key
 	DATABASE_URL: string;
 	JWT_SECRET: string; //
+    V2_MAGNIFY_CONTRACT_ADDRESS: string;
 }
 
 export interface WorldScanTransaction {
