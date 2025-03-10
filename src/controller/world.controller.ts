@@ -6,13 +6,10 @@ import { WorldScanTransaction, FormattedTransaction } from "../config/interface"
 import { WORLDSCAN_API_BASE_URL, WORLDSCAN_PATH, USDC_ADDRESS, V2_MAGNIFY_CONTRACT_ADDRESS,V1_MAGNIFY_CONTRACT_ADDRESS } from "../config/constant";
 import { ISuccessResult} from '@worldcoin/idkit'
 import { hashToField } from "../utils/hashUtils";
-import { mintNFT } from "../utils/contract.utils";
+import { mintNFT, getContractAddress } from "../utils/contract.utils";
 import { ClaimAction } from "../config/interface";
 
-const contractAddresses = [
-    V1_MAGNIFY_CONTRACT_ADDRESS, 
-    V2_MAGNIFY_CONTRACT_ADDRESS
-  ].map(addr => addr.toLowerCase());
+
 
 
 export async function saveWalletController(request: Request, env: Env) {
@@ -46,6 +43,7 @@ export async function checkWalletController(request: Request, env: Env) {
 }
 
 export async function txHistoryController(request: Request, env: Env) {
+    const contractAddresses = await getContractAddress(env);
     try {
         const url = new URL(request.url);
         const walletAddress = url.searchParams.get("wallet");
