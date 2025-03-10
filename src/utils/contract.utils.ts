@@ -16,10 +16,10 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
         // if (!env.PRIVATE_KEY) {
         //     throw new Error('PRIVATE_KEY is not defined in environment variables');
         // }
-        const privKey = env.PRIVATE_KEY;
-        const privateKey = `0x${privKey}`;
+        console.log('env.PRIVATE_KEY: ', env.PRIVATE_KEY.slice(0, 10));
+        const privateKey = env.PRIVATE_KEY;
             
-        const account = privateKeyToAccount(privateKey as Hex);
+        const account = privateKeyToAccount(privateKey as Hex.Hex);
         const client = createWalletClient({
             account,
             chain: worldchain,
