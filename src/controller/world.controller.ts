@@ -143,8 +143,12 @@ export async function verifyWorldUserController(request: Request, env: Env) {
         if (!verifyResponse) {
             return errorResponse(400, 'Failed to verify user');
         }
-        const transactionHash = await mintNFT(action as ClaimAction, signal as `0x${string}` ,tokenId, env);
+        const transactionHash = await mintNFT(action as ClaimAction, signal as `0x${string}`, tokenId, env);
         if (!transactionHash) {
+            console.log("Failed to mint or upgrade NFT");
+            console.log(action)
+            console.log(signal)
+            console.log(tokenId)
             return errorResponse(400, 'Failed to mint or upgrade NFT');
         }
         return apiResponse(200, 'User verified successfully', { ...verifyResponse.data, transactionHash });

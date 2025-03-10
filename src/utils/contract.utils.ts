@@ -15,10 +15,15 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
         //Ensure the private key has 0x prefix and exists
         // if (!env.PRIVATE_KEY) {
         //     throw new Error('PRIVATE_KEY is not defined in environment variables');
-        // }
-        console.log('env.PRIVATE_KEY: ', env.PRIVATE_KEY.slice(0, 10));
+        // }        
         const privateKey = env.PRIVATE_KEY as string;
-            
+
+        console.log("------")
+        console.log(action)
+        console.log(signal)
+        console.log(tokenId)
+        console.log("------")
+
         const account = privateKeyToAccount(privateKey as Hex.Hex);
         console.log(account)
 
@@ -29,7 +34,7 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
         });
 
         console.log(client)
-        
+
         const tier = ACTION_TO_TIER[action];
         
         const hash = await client.writeContract({
