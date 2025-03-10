@@ -29,7 +29,6 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
 
 
         const account = privateKeyToAccount(privateKey as Hex.Hex);
-        console.log(account)
 
         const client = createWalletClient({
             account,
@@ -37,7 +36,6 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
             transport: http('https://worldchain-mainnet.g.alchemy.com/public'),
         });
 
-        console.log(client)
 
         const tier = ACTION_TO_TIER[action];
         
