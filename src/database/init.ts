@@ -3,6 +3,8 @@ import pg from 'pg';
 import { Env } from '../config/interface';
 
 export async function getConnection(env: Env): Promise<Sequelize> {
+
+  console.log('DATABASE_URL: ', env.DATABASE_URL);
   // Create a new connection for each request
   const sequelize = new Sequelize(env.DATABASE_URL, {
     dialect: 'postgres',
