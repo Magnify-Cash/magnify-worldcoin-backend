@@ -3,16 +3,13 @@ import { errorResponse, apiResponse } from "../utils/apiResponse.utils";
 import { Env } from "../config/interface";
 import axios from "axios";
 import { WorldScanTransaction, FormattedTransaction } from "../config/interface";
-import { WORLDSCAN_API_BASE_URL, WORLDSCAN_PATH, USDC_ADDRESS, V2_MAGNIFY_CONTRACT_ADDRESS,V1_MAGNIFY_CONTRACT_ADDRESS } from "../config/constant";
+import { WORLDSCAN_API_BASE_URL, WORLDSCAN_PATH, USDC_ADDRESS } from "../config/constant";
 import { ISuccessResult} from '@worldcoin/idkit'
 import { hashToField } from "../utils/hashUtils";
-import { mintNFT } from "../utils/contract.utils";
+import { mintNFT, getContractAddress } from "../utils/contract.utils";
 import { ClaimAction } from "../config/interface";
 
-const contractAddresses = [
-    V1_MAGNIFY_CONTRACT_ADDRESS, 
-    V2_MAGNIFY_CONTRACT_ADDRESS
-  ].map(addr => addr.toLowerCase());
+
 
 
 export async function saveWalletController(request: Request, env: Env) {
@@ -46,6 +43,7 @@ export async function checkWalletController(request: Request, env: Env) {
 }
 
 export async function txHistoryController(request: Request, env: Env) {
+    const contractAddresses = await getContractAddress(env);
     try {
         const url = new URL(request.url);
         const walletAddress = url.searchParams.get("wallet");
@@ -118,7 +116,6 @@ export async function verifyWorldUserController(request: Request, env: Env) {
             signal: string,
             tokenId: string
         };
-        //console.log(`payload: ${JSON.stringify(payload)}, action: ${action}, signal: ${signal}`);
 
         if (!payload || !action || !signal) {
             return errorResponse(400, 'Missing required fields: payload, action, signal');
@@ -143,9 +140,6 @@ export async function verifyWorldUserController(request: Request, env: Env) {
         if (!verifyResponse) {
             return errorResponse(400, 'Failed to verify user');
         }
-
-        console.log("User is verified but no tokenId?")
-        console.log("tokenId: ", tokenId)
 
         const transactionHash = await mintNFT(action as ClaimAction, signal as `0x${string}`, tokenId, env);
         if (!transactionHash) {

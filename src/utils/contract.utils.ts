@@ -7,7 +7,13 @@ import { V1_MAGNIFY_CONTRACT_ADDRESS } from '../config/constant';
 
 
 
-
+export async function getContractAddress(env: Env) {
+    const contractAddresses = [
+        V1_MAGNIFY_CONTRACT_ADDRESS, 
+        String(env.V2_MAGNIFY_CONTRACT_ADDRESS || '').trim()
+      ].map(addr => addr.toLowerCase());
+      return contractAddresses;
+}
 
 
 export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenId: string, env: Env) {
