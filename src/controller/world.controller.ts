@@ -143,6 +143,10 @@ export async function verifyWorldUserController(request: Request, env: Env) {
         if (!verifyResponse) {
             return errorResponse(400, 'Failed to verify user');
         }
+
+        console.log("User is verified but no tokenId?")
+        console.log("tokenId: ", tokenId)
+
         const transactionHash = await mintNFT(action as ClaimAction, signal as `0x${string}`, tokenId, env);
         if (!transactionHash) {
             console.log("Failed to mint or upgrade NFT");
