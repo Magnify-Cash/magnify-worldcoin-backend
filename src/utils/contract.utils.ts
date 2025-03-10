@@ -12,7 +12,6 @@ export async function getContractAddress(env: Env) {
         V1_MAGNIFY_CONTRACT_ADDRESS, 
         String(env.V2_MAGNIFY_CONTRACT_ADDRESS || '').trim()
       ].map(addr => addr.toLowerCase());
-      console.log('contractAddresses: ', contractAddresses);
       return contractAddresses;
 }
 
