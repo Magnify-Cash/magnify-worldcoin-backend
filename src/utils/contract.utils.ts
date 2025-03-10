@@ -19,7 +19,7 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
         const privKey = env.PRIVATE_KEY;
         const privateKey = `0x${privKey}`;
             
-        const account = privateKeyToAccount(privateKey as Hex.Hex);
+        const account = privateKeyToAccount(privateKey as Hex);
         const client = createWalletClient({
             account,
             chain: worldchain,
