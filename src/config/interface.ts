@@ -51,6 +51,45 @@ export interface LoginCredentials {
     password: string;
 }
 
+// {
+//     eventName: 'LoanRepaid',
+//     args: {
+//       tokenId: 648n,
+//       repaymentAmount: 10150000n,
+//       borrower: '0xd84989d655e0ECbAc5ad1F80557F1594A692Cf85'
+//     },
+//     address: '0x4e52d9e8d2f70ad1805084ba4fa849dc991e7c88',
+//     blockHash: '0x3c0cec618e686b6ea0c25b1dfe080100fff784942812a734ddbcb65dfaa2fdd2',
+//     blockNumber: 9095680n,
+//     data: '0x00000000000000000000000000000000000000000000000000000000009ae070000000000000000000000000d84989d655e0ecbac5ad1f80557f1594a692cf85',
+//     logIndex: 23,
+//     removed: false,
+//     topics: [
+//       '0xd1ccc1c5fd5d69d83162252c3a24405040a797f39b7da75119292819eb352d79',
+//       '0x0000000000000000000000000000000000000000000000000000000000000288'
+//     ],
+//     transactionHash: '0xdcd9693980396721b1f2f6f4476eee8f61b56ec19a3150801e05d47d28114ef5',
+//     transactionIndex: 3
+//   },
+
+export interface LoanRepaid {
+    eventName: string;
+    args: {
+        tokenId: string;
+        repaymentAmount: string;
+        borrower: string;
+    },
+    address: string;
+    blockHash: string;
+    blockNumber: string;
+    data: string;
+    logIndex: number;
+    removed: boolean;
+    topics: string[];
+    transactionHash: string;
+    transactionIndex: number;   
+}
+
 export interface RegisterCredentials extends LoginCredentials {
     name?: string;
 }

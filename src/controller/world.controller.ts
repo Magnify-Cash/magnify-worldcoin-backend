@@ -6,9 +6,10 @@ import { WorldScanTransaction, FormattedTransaction } from "../config/interface"
 import { WORLDSCAN_API_BASE_URL, WORLDSCAN_PATH, USDC_ADDRESS } from "../config/constant";
 import { ISuccessResult} from '@worldcoin/idkit'
 import { hashToField } from "../utils/hashUtils";
-import { mintNFT, getContractAddress } from "../utils/contract.utils";
+import { mintNFT, getContractAddress, getLoanV1 } from "../utils/contract.utils";
 import { ClaimAction } from "../config/interface";
-
+import { exportCSV } from "../utils/common.utils";
+import { LoanRepaid } from "../config/interface";
 
 
 
@@ -149,5 +150,34 @@ export async function verifyWorldUserController(request: Request, env: Env) {
     } catch (error) {
         console.error("Verification Error:", error);
         return errorResponse(500, 'Error verifying world user');
+    }
+}
+
+export async function getLoanV1Controller(request: Request, env: Env) {
+    try {
+        const result = await getLoanV1() as any[];
+        
+        // Flatten nested objects in the data structure
+        const flattenedData = result.map(item => ({
+            user_wallet: item.user_wallet,
+            loan_amount: item.loan_amount,
+            loan_repaid_amount: item.loan_repaid_amount,
+            block_start: item.loan_term.blockStart,
+            block_end: item.loan_term.blockEnd
+        }));
+        
+        const csv = exportCSV(flattenedData);
+        
+        // Return a response with CSV content for download
+        return new Response(csv.toString(), {
+            status: 200,
+            headers: {
+                'Content-Type': 'text/csv',
+                'Content-Disposition': 'attachment; filename="loan_data.csv"'
+            }
+        });
+    } catch (error) {
+        console.log(error);
+        return errorResponse(500, 'Failed to get loan');
     }
 }
