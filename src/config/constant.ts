@@ -18,3 +18,6 @@ export const WORLDSCAN_PATH = {
 export const SALT_ROUNDS = 10;
 
 export const WORLDCHAIN_RPC_URL = "https://worldchain-mainnet.g.alchemy.com/public"
+export const WORLDCHAIN_RPC_URL_V2 = "https://worldchain-mainnet-rpc.worldcoin.org"
+
+export const V1_MAGNIFY_CONTRACT_BLOCK_ZERO = 8116813n;

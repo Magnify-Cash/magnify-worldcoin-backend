@@ -90,6 +90,35 @@ export interface LoanRepaid {
     transactionIndex: number;   
 }
 
+export interface LoanRequested {
+    eventName: string;
+    args: {
+        tokenId: string;
+        amount: string;
+        borrower: string;  
+    },
+    address: string;
+    blockHash: string;
+    blockNumber: string;
+    data: string;
+    logIndex: number;
+    removed: boolean;
+    topics: string[];
+    transactionHash: string;
+    transactionIndex: number;
+}
+
+interface LoanResult {
+    user_wallet: string;
+    loan_amount: number;
+    loan_repaid_amount: number;
+    loan_term: number;
+    time_loan_started: number;
+    time_loan_ended: number;
+    is_defaulted: boolean;
+}
+
+
 export interface RegisterCredentials extends LoginCredentials {
     name?: string;
 }
