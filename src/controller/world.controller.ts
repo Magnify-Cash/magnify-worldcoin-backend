@@ -6,9 +6,10 @@ import { WorldScanTransaction, FormattedTransaction } from "../config/interface"
 import { WORLDSCAN_API_BASE_URL, WORLDSCAN_PATH, USDC_ADDRESS } from "../config/constant";
 import { ISuccessResult} from '@worldcoin/idkit'
 import { hashToField } from "../utils/hashUtils";
-import { mintNFT, getContractAddress, getLoanV1, getLoanV2 } from "../utils/contract.utils";
+import { mintNFT, getContractAddress,  getLoanV2, getLoanData } from "../utils/contract.utils";
 import { ClaimAction } from "../config/interface";
 import { exportCSV } from "../utils/common.utils";
+import { V1_MAGNIFY_CONTRACT_ADDRESS } from "../config/constant";
 
 
 
@@ -154,8 +155,8 @@ export async function verifyWorldUserController(request: Request, env: Env) {
 
 export async function getLoanV1Controller(request: Request, env: Env) {
     try {
-        const result = await getLoanV1() as any[];
-        const resultV2 = await getLoanV2(env) as any[];
+        const result = await getLoanData(V1_MAGNIFY_CONTRACT_ADDRESS, 'v1') as any[];
+        const resultV2 = await getLoanData(env.V2_MAGNIFY_CONTRACT_ADDRESS, 'v2') as any[];
         
         // Combine both results
         const allLoans = [...result, ...resultV2].filter(item => item !== null && item !== undefined);
@@ -173,7 +174,8 @@ export async function getLoanV1Controller(request: Request, env: Env) {
                       (typeof item.loan_term === 'object' ? '30' : ''),
             time_loan_started: item.time_loan_started || '',
             time_loan_ended: item.time_loan_ended || '',
-            is_defaulted: item.is_defaulted
+            is_defaulted: item.is_defaulted,
+            version: item.version
         }));
         
         // Generate CSV
