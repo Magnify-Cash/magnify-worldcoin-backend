@@ -193,7 +193,7 @@ export async function getLoanData(contractAddress: string, version: string) {
             address: V1_MAGNIFY_CONTRACT_ADDRESS,
             abi: MagnifyV1Abi,
             eventName: 'LoanRequested',
-            fromBlock: 1n,
+            fromBlock: 8116813n,
             toBlock: 'latest'
         });
         const loanRequestArr: LoanRequested[] = serializeBigInt(loanRequestedV1);
@@ -260,7 +260,7 @@ export async function getLoanData(contractAddress: string, version: string) {
                     user_wallet: item.args.borrower,
                     loan_amount: item.args.amount,
                     loan_repaid_amount: repaidItem.args.repaymentAmount,
-                    loan_term: parseInt(item.args.amount) === 10000000 ? 60 : 30,
+                    loan_term: parseInt(item.args.amount) === 10000000 ? 90 : 30,
                     time_loan_started: convertTimestampToDate(serializeBigInt(startTimestamp)),
                     time_loan_ended: convertTimestampToDate(serializeBigInt(endTimestamp)),
                     is_defaulted: false,
@@ -276,7 +276,7 @@ export async function getLoanData(contractAddress: string, version: string) {
         const openLoanV1 = dedupedLoanRequestArr.filter((loan: LoanRequested) => !processedTokenIds.has(loan.args.tokenId));
         for(let i = 0; i < openLoanV1.length; i++) {
             const item = openLoanV1[i];
-            const loanTerm = parseInt(item.args.amount) === 10000000 ? 60 : 30;
+            const loanTerm = parseInt(item.args.amount) === 10000000 ? 90 : 30;
             const timestamp = await getBlockTimestamp(BigInt(item.blockNumber));
             const startTimestamp = serializeBigInt(timestamp);
             const isDefaulted = await checkLoanStatus(startTimestamp, loanTerm);
@@ -284,7 +284,7 @@ export async function getLoanData(contractAddress: string, version: string) {
                 user_wallet: item.args.borrower,
                 loan_amount: item.args.amount,
                 loan_repaid_amount: "",
-                loan_term: parseInt(item.args.amount) === 10000000 ? 60 : 30,
+                loan_term: parseInt(item.args.amount) === 10000000 ? 90 : 30,
                 time_loan_started: convertTimestampToDate(startTimestamp),
                 time_loan_ended: "",
                 is_defaulted: isDefaulted,
