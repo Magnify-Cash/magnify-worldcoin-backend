@@ -15,4 +15,6 @@ export const WORLDSCAN_PATH = {
 	notification: "https://developer.worldcoin.org/api/v2/minikit/send-notification"
 }
 
+export const WORLDCHAIN_RPC_URL = "https://icy-greatest-dream.worldchain-mainnet.quiknode.pro/f465b27e9a8dbd90d16bfb3bca7b2193bc1dcfa8/"
+
 export const SALT_ROUNDS = 10;

@@ -1,9 +1,9 @@
-import { createWalletClient, http } from 'viem';
+import { createWalletClient, http, createPublicClient } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { Bytes, Hex, Hash } from 'ox';
 import { ACTION_TO_TIER, Env, ClaimAction } from '../config/interface';
 import { worldchain } from 'viem/chains';
-import { V1_MAGNIFY_CONTRACT_ADDRESS } from '../config/constant';
+import { V1_MAGNIFY_CONTRACT_ADDRESS, WORLDCHAIN_RPC_URL } from '../config/constant';
 
 
 
@@ -81,3 +81,34 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
     }
 }
 
+export async function initPublicClient(env: Env) {
+        const client = createPublicClient({
+            chain: worldchain,
+            transport: http(WORLDCHAIN_RPC_URL),
+        });
+        return client;
+} 
+
+export function serializeBigInt(obj: any): any {
+    if (obj === null || obj === undefined) {
+        return obj;
+    }
+    
+    if (typeof obj === 'bigint') {
+        return obj.toString();
+    }
+    
+    if (Array.isArray(obj)) {
+        return obj.map(serializeBigInt);
+    }
+    
+    if (typeof obj === 'object') {
+        const result: any = {};
+        for (const key in obj) {
+            result[key] = serializeBigInt(obj[key]);
+        }
+        return result;
+    }
+    
+    return obj;
+}
