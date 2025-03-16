@@ -179,7 +179,7 @@ async function getContractEventsWithPagination(
 
 //LoanRequested
 //LoanRepaid
-export async function getLoanData(contractAddress: string, version: string) {
+export async function getLoanData(contractAddress: string, contractABI: any, version: string) {
     try {
         let result = [];
         let openLoan = [];
@@ -190,21 +190,22 @@ export async function getLoanData(contractAddress: string, version: string) {
 
         // Use the paginated function instead of directly calling getContractEvents
         const loanRequestedV1 = await getContractEventsWithPagination(client, {
-            address: V1_MAGNIFY_CONTRACT_ADDRESS,
-            abi: MagnifyV1Abi,
-            eventName: 'LoanRequested',
-            fromBlock: 8116813n,
+            address: contractAddress as `0x${string}`,
+            abi: contractABI,
+            eventName: 'LoanRequested',  //8116814
+            fromBlock:  version === 'v1' ? 8116814n : 10253325n,
             toBlock: 'latest'
         });
         const loanRequestArr: LoanRequested[] = serializeBigInt(loanRequestedV1);
+        console.log('loanRequestArr: ', loanRequestArr.length);
         const beforeCount = loanRequestArr.length;
 
         // Use the paginated function for loan repaid events
         const loanRepaidV1 = await getContractEventsWithPagination(client, {
-            address: V1_MAGNIFY_CONTRACT_ADDRESS,
-            abi: MagnifyV1Abi,
+            address: contractAddress as `0x${string}`,
+            abi: contractABI,
             eventName: 'LoanRepaid',
-            fromBlock: 8116813n,
+            fromBlock: version === 'v1' ? 8116814n : 10253325n,
             toBlock: 'latest'
         });
         const loanRepaidArr: LoanRepaid[] = serializeBigInt(loanRepaidV1);
@@ -258,11 +259,13 @@ export async function getLoanData(contractAddress: string, version: string) {
                 
                 let obj = {
                     user_wallet: item.args.borrower,
-                    loan_amount: item.args.amount,
-                    loan_repaid_amount: repaidItem.args.repaymentAmount,
+                    loan_amount: Number(item.args.amount) / 1000000,
+                    loan_repaid_amount: Number(repaidItem.args.repaymentAmount) / 1000000,
                     loan_term: parseInt(item.args.amount) === 10000000 ? 90 : 30,
                     time_loan_started: convertTimestampToDate(serializeBigInt(startTimestamp)),
+                    loan_due_date: calculateLoanDueDate(serializeBigInt(startTimestamp), parseInt(item.args.amount) === 10000000 ? 90 : 30),
                     time_loan_ended: convertTimestampToDate(serializeBigInt(endTimestamp)),
+                    default_loan_date: "",
                     is_defaulted: false,
                     version: version
                 };
@@ -282,11 +285,13 @@ export async function getLoanData(contractAddress: string, version: string) {
             const isDefaulted = await checkLoanStatus(startTimestamp, loanTerm);
             const openLoanObj = {
                 user_wallet: item.args.borrower,
-                loan_amount: item.args.amount,
+                loan_amount: Number(item.args.amount) / 1000000, 
                 loan_repaid_amount: "",
                 loan_term: parseInt(item.args.amount) === 10000000 ? 90 : 30,
                 time_loan_started: convertTimestampToDate(startTimestamp),
+                loan_due_date: calculateLoanDueDate(startTimestamp, parseInt(item.args.amount) === 10000000 ? 90 : 30),
                 time_loan_ended: "",
+                default_loan_date: isDefaulted === true ? calculateLoanDueDate(startTimestamp, parseInt(item.args.amount) === 10000000 ? 90 : 30) : "",
                 is_defaulted: isDefaulted,
                 version: version
             }
@@ -382,12 +387,14 @@ export async function getLoanV2(env: Env) {
                 
                 let obj = {
                     user_wallet: item.args.borrower,
-                    loan_amount: item.args.amount,
+                    loan_amount: Number(item.args.amount),
                     loan_repaid_amount: repaidItem.args.repaymentAmount,
                     loan_term: parseInt(item.args.amount) === 10000000 ? 60 : 30,
                     time_loan_started: convertTimestampToDate(serializeBigInt(startTimestamp)),
+                    loan_due_date: calculateLoanDueDate(serializeBigInt(startTimestamp), parseInt(item.args.amount) === 10000000 ? 60 : 30),
                     time_loan_ended: convertTimestampToDate(serializeBigInt(endTimestamp)),
                     is_defaulted: false,
+                    version: "v2"
                 };
                 
                 result.push(obj);
@@ -399,5 +406,13 @@ export async function getLoanV2(env: Env) {
         console.log(error);
         return []
     }
+}
+
+// Helper function to calculate loan due date
+function calculateLoanDueDate(startTimestamp: number, loanTerm: number): string {
+    const startDate = new Date(startTimestamp * 1000);
+    const dueDate = new Date(startDate);
+    dueDate.setDate(startDate.getDate() + loanTerm);
+    return dueDate.toISOString();
 }
 

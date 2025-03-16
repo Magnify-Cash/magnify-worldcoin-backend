@@ -9,7 +9,9 @@ import { hashToField } from "../utils/hashUtils";
 import { mintNFT, getContractAddress,  getLoanV2, getLoanData } from "../utils/contract.utils";
 import { ClaimAction } from "../config/interface";
 import { exportCSV } from "../utils/common.utils";
-import { V1_MAGNIFY_CONTRACT_ADDRESS } from "../config/constant";
+import { V1_MAGNIFY_CONTRACT_ADDRESS, V2_MAGNIFY_CONTRACT_ADDRESS } from "../config/constant";
+import MagnifyV1Abi from "../config/contracts/MagnifyV1.json";
+import MagnifyV2Abi from "../config/contracts/MagnifyV2.json";
 
 
 
@@ -155,8 +157,9 @@ export async function verifyWorldUserController(request: Request, env: Env) {
 
 export async function getLoanV1Controller(request: Request, env: Env) {
     try {
-        const result = await getLoanData(V1_MAGNIFY_CONTRACT_ADDRESS, 'v1') as any[];
-        const resultV2 = await getLoanData(env.V2_MAGNIFY_CONTRACT_ADDRESS, 'v2') as any[];
+       const result = await getLoanData(V1_MAGNIFY_CONTRACT_ADDRESS, MagnifyV1Abi, 'v1') as any[];
+       const resultV2 = await getLoanData(V2_MAGNIFY_CONTRACT_ADDRESS, MagnifyV2Abi, 'v2') as any[];
+       //const resultV2 = [];
         
         // Combine both results
         const allLoans = [...result, ...resultV2].filter(item => item !== null && item !== undefined);
@@ -166,14 +169,33 @@ export async function getLoanV1Controller(request: Request, env: Env) {
             return apiResponse(200, 'No loan data available', []);
         }
         
-        const sanitizedData = allLoans.map(item => ({
+        // Deduplicate loans across V1 and V2 contracts
+        const uniqueLoans = new Map();
+        
+        for (const loan of allLoans) {
+            // Create a unique key based on wallet address, loan amount, and loan start time
+            // This should identify the same loan across different contract versions
+            const uniqueKey = `${loan.user_wallet}_${loan.loan_amount}_${loan.time_loan_started}_${loan.time_loan_ended}`;
+            
+            // If this is the first time we've seen this loan, add it
+            // If we've seen it before, keep the V2 version (assuming V2 is more up-to-date)
+            if (!uniqueLoans.has(uniqueKey) || loan.version === 'v2') {
+                uniqueLoans.set(uniqueKey, loan);
+            }
+        }
+        
+        // Convert back to array
+        const deduplicatedLoans = Array.from(uniqueLoans.values());
+        
+        const sanitizedData = deduplicatedLoans.map(item => ({
             user_wallet: item.user_wallet || '',
             loan_amount: item.loan_amount || '',
             loan_repaid_amount: item.loan_repaid_amount || '',
-            loan_term: typeof item.loan_term === 'number' ? item.loan_term : 
-                      (typeof item.loan_term === 'object' ? '30' : ''),
+            loan_term: item.loan_term || '',
             time_loan_started: item.time_loan_started || '',
             time_loan_ended: item.time_loan_ended || '',
+            loan_due_date: item.loan_due_date || '',
+            default_loan_date: item.default_loan_date || '',
             is_defaulted: item.is_defaulted,
             version: item.version
         }));
@@ -198,7 +220,9 @@ export async function getLoanV1Controller(request: Request, env: Env) {
             // Return API response with the data instead of file info
             return apiResponse(200, 'Loan data retrieved successfully', {
                 recordCount: sanitizedData.length,
-                loans: sanitizedData
+                loans: sanitizedData,
+                uniqueCount: deduplicatedLoans.length,
+                originalCount: allLoans.length
             });
         }
     } catch (error) {
