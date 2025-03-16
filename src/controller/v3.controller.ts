@@ -1,8 +1,9 @@
 import { Env } from "../config/interface";
 import { getSoulboundData } from "../helpers/v3.helper";
 import { apiResponse, errorResponse } from "../utils/apiResponse.utils"
-import { getEthBalance, getUSDCBalance, getTokenMetadata } from "../helpers/token.helper";
+import { getEthBalance, getUSDCBalance, getTokenMetadata, getWalletTokenPortfolio } from "../helpers/token.helper";
 import { serializeBigInt } from "../utils/contract.utils";
+import { convertHexToInteger } from "../utils/hashUtils";
 
 
 export async function getSoulboundDataController(request: Request, env: Env) {
@@ -67,5 +68,36 @@ export async function getTokenMetadataController(request: Request, env: Env) {
         return apiResponse(200, 'Token metadata fetched successfully', { metadata });
     } catch (err) {
         return errorResponse(500, 'Error fetching token metadata');
+    }
+}
+
+export async function getWalletTokenPortfolioController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const walletAddress = url.searchParams.get("wallet");
+
+        if (!walletAddress) {
+            return errorResponse(400, 'walletAddress is required');
+        }
+        const portfolio = await getWalletTokenPortfolio(walletAddress, env);
+        const result = portfolio.result.tokenBalances;
+        const serializedPromises =  result.map(async (item: {
+            contractAddress: string,
+            tokenBalance: string
+        }) => {
+           const tokenMetadata = await getTokenMetadata(item.contractAddress, env);
+           const tokenBalance = convertHexToInteger(item.tokenBalance, tokenMetadata.tokenDecimals as number);
+           return {
+            tokenAddress: item.contractAddress,
+            tokenName: tokenMetadata.tokenName,
+            tokenSymbol: tokenMetadata.tokenSymbol,
+            tokenDecimals: tokenMetadata.tokenDecimals,
+            tokenBalance: tokenBalance
+           }
+        })
+        const serializedResult = await Promise.all(serializedPromises);
+        return apiResponse(200, 'Wallet token portfolio fetched successfully', serializedResult);
+    } catch (err) {
+        return errorResponse(500, 'Error fetching wallet token portfolio');
     }
 }
