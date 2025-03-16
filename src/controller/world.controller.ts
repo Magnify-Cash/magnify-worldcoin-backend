@@ -6,10 +6,9 @@ import { WorldScanTransaction, FormattedTransaction } from "../config/interface"
 import { WORLDSCAN_API_BASE_URL, WORLDSCAN_PATH, USDC_ADDRESS } from "../config/constant";
 import { ISuccessResult} from '@worldcoin/idkit'
 import { hashToField } from "../utils/hashUtils";
-import { mintNFT, getContractAddress,  getLoanV2, getLoanData } from "../utils/contract.utils";
+import { mintNFT, getContractAddress } from "../utils/contract.utils";
 import { ClaimAction } from "../config/interface";
-import { exportCSV } from "../utils/common.utils";
-import { V1_MAGNIFY_CONTRACT_ADDRESS } from "../config/constant";
+
 
 
 
@@ -150,59 +149,5 @@ export async function verifyWorldUserController(request: Request, env: Env) {
     } catch (error) {
         console.error("Verification Error:", error);
         return errorResponse(500, 'Error verifying world user');
-    }
-}
-
-export async function getLoanV1Controller(request: Request, env: Env) {
-    try {
-        const result = await getLoanData(V1_MAGNIFY_CONTRACT_ADDRESS, 'v1') as any[];
-        const resultV2 = await getLoanData(env.V2_MAGNIFY_CONTRACT_ADDRESS, 'v2') as any[];
-        
-        // Combine both results
-        const allLoans = [...result, ...resultV2].filter(item => item !== null && item !== undefined);
-        
-        // Check if we have any loans
-        if (allLoans.length === 0) {
-            return apiResponse(200, 'No loan data available', []);
-        }
-        
-        const sanitizedData = allLoans.map(item => ({
-            user_wallet: item.user_wallet || '',
-            loan_amount: item.loan_amount || '',
-            loan_repaid_amount: item.loan_repaid_amount || '',
-            loan_term: typeof item.loan_term === 'number' ? item.loan_term : 
-                      (typeof item.loan_term === 'object' ? '30' : ''),
-            time_loan_started: item.time_loan_started || '',
-            time_loan_ended: item.time_loan_ended || '',
-            is_defaulted: item.is_defaulted,
-            version: item.version
-        }));
-        
-        // Generate CSV
-        const csvResult = exportCSV(sanitizedData, 'loan_data.csv');
-        
-        // Support both download and API response modes
-        const url = new URL(request.url);
-        const downloadMode = url.searchParams.get('download') === 'true';
-        
-        if (downloadMode) {
-            // Return a response with CSV content for download
-            return new Response(csvResult.csv, {
-                status: 200,
-                headers: {
-                    'Content-Type': 'text/csv',
-                    'Content-Disposition': `attachment; filename="${csvResult.filename}"`
-                }
-            });
-        } else {
-            // Return API response with the data instead of file info
-            return apiResponse(200, 'Loan data retrieved successfully', {
-                recordCount: sanitizedData.length,
-                loans: sanitizedData
-            });
-        }
-    } catch (error) {
-        console.log(error);
-        return errorResponse(500, 'Failed to get loan');
     }
 }

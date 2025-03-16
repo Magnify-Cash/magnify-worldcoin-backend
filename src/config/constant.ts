@@ -16,9 +16,3 @@ export const WORLDSCAN_PATH = {
 }
 
 export const SALT_ROUNDS = 10;
-
-export const WORLDCHAIN_RPC_URL = "https://worldchain-mainnet.g.alchemy.com/public"
-export const WORLDCHAIN_RPC_URL_V2 = "https://worldchain-mainnet-rpc.worldcoin.org"
-export const WORLDCHAIN_RPC_URL_V3 = "https://side-little-crater.worldchain-mainnet.quiknode.pro/bdbd920c71c3f15c2643ec4346b030569b3feec0/"
-
-export const V1_MAGNIFY_CONTRACT_BLOCK_ZERO = 8116813n;

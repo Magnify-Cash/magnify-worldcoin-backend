@@ -2,7 +2,6 @@
 	"name": "magnify-worldcoin-backend",
 	"version": "0.0.0",
 	"private": true,
-	"type": "module",
 	"scripts": {
 		"deploy": "wrangler deploy",
 		"dev": "wrangler dev",
@@ -25,7 +24,6 @@
 		"@worldcoin/minikit-js": "^1.6.1",
 		"axios": "^1.8.2",
 		"bcryptjs": "^3.0.2",
-		"export-to-csv": "^1.4.0",
 		"jsonwebtoken": "^9.0.2",
 		"ox": "^0.6.9",
 		"pg": "^8.13.3",

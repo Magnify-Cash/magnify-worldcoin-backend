@@ -18,4 +18,3 @@ export const errorResponse = (statusCode: number, message: string) => {
     });
 };
 
-

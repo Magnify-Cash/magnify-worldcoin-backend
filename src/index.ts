@@ -1,10 +1,9 @@
 import { Env, AuthRequest } from './config/interface';
-import { saveWalletController, txHistoryController, sendWorldScanNotificationController, checkWalletController, verifyWorldUserController, getLoanV1Controller } from './controller/world.controller';
+import { saveWalletController, txHistoryController, sendWorldScanNotificationController, checkWalletController, verifyWorldUserController } from './controller/world.controller';
 import { loginController, registerController, getUsersController, grantAdminController, verifyAuthTokenController } from './controller/user.controller';
 import { apiResponse, errorResponse } from './utils/apiResponse.utils';
 import { authMiddleware } from './middleware/auth.middleware';
 import { getAnnouncementsController } from './controller/announcement.controller';
-
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -39,8 +38,6 @@ export default {
 			case '/announcements':
 				return authMiddleware(request as AuthRequest, env, 
 					() => getAnnouncementsController(request, env));
-			case '/export/loan':
-				return getLoanV1Controller(request, env);
 			default:
 				return errorResponse(404, 'Not Found');
 		}
