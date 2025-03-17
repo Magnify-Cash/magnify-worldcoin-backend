@@ -4,11 +4,20 @@ import { loginController, registerController, getUsersController, grantAdminCont
 import { apiResponse, errorResponse } from './utils/apiResponse.utils';
 import { authMiddleware } from './middleware/auth.middleware';
 import { getAnnouncementsController } from './controller/announcement.controller';
+import { CORS_HEADERS } from './config/constant';
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
 		const url = new URL(request.url);
 		const path = url.pathname;
+
+		// Handle OPTIONS requests for CORS preflight
+		if (request.method === 'OPTIONS') {
+			return new Response(null, {
+				status: 204,
+				headers: CORS_HEADERS
+			});
+		}
 
 		switch (path) {
 			case '/':
