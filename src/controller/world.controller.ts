@@ -104,6 +104,7 @@ export async function sendWorldScanNotificationController(request: Request, env:
         }
         return apiResponse(200, 'Notification sent successfully', result.data);
     } catch (error) {
+        console.log(error);
         return errorResponse(500, 'Failed to send notification');
     }
 }
