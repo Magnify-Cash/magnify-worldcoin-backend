@@ -4,6 +4,8 @@ import { Bytes, Hex, Hash } from 'ox';
 import { ACTION_TO_TIER, Env, ClaimAction } from '../config/interface';
 import { worldchain } from 'viem/chains';
 import { V1_MAGNIFY_CONTRACT_ADDRESS, WORLDCHAIN_RPC_URL } from '../config/constant';
+import axios from 'axios';
+import httpCall from 'http';
 
 
 
@@ -88,6 +90,40 @@ export async function initPublicClient(env: Env) {
         });
         return client;
 } 
+
+export async function rpcBatchCall(rpcUrl: string, method: string, params: any) {
+    const agent = new httpCall.Agent({
+      keepAlive: true,
+      maxSockets: 10,
+      timeout: 10000,
+    });
+  
+    const payload = {
+      jsonrpc: "2.0",
+      id: Date.now(),
+      method,
+      params,
+    };
+  
+    try {
+      const response = await axios.post(rpcUrl, payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        httpAgent: agent, 
+        timeout: 6000
+      });
+  
+      if (response.data.error) {
+        throw new Error(response.data.error);
+      }
+  
+      return response.data.result;
+    } catch (error) {
+      console.error("RPC Request error:", error);
+      throw error instanceof Error ? error.message : "Error during RPC call";
+    }
+  }
 
 export function serializeBigInt(obj: any): any {
     if (obj === null || obj === undefined) {

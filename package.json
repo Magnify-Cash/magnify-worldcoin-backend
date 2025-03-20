@@ -24,6 +24,8 @@
 		"@worldcoin/minikit-js": "^1.6.1",
 		"axios": "^1.8.2",
 		"bcryptjs": "^3.0.2",
+		"ethers": "^6.13.5",
+		"https": "^1.0.0",
 		"jsonwebtoken": "^9.0.2",
 		"ox": "^0.6.9",
 		"pg": "^8.13.3",
