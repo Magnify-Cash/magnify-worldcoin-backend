@@ -95,14 +95,15 @@ export async function sendWorldScanNotificationController(request: Request, env:
             {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${env.WORLDCOIN_API_KEY}`
+                    'Authorization': `Bearer ${env.WORLDCOIN_API_KEY}`,
+                    'User-Agent': 'Cloudflare-Worker/1.0'
                 }
             }
         );
         if (!result) {
             return errorResponse(400, 'Failed to send notification');
         }
-        return apiResponse(200, 'Notification sent successfully', result.data);
+        return apiResponse(200, 'Notification sent successfully', result.data.result);
     } catch (error) {
         console.log(error);
         return errorResponse(500, 'Failed to send notification');
