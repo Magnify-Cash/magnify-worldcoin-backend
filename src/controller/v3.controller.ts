@@ -1,5 +1,5 @@
 import { Env } from "../config/interface";
-import { getSoulboundData } from "../helpers/v3.helper";
+import { getSoulboundData, getSoulboundTokenURI, getTotalAssetsMagnifyV3, readMagnifyV3Contract, readSoulboundContract } from "../helpers/v3.helper";
 import { apiResponse, errorResponse } from "../utils/apiResponse.utils"
 import { getEthBalance, getUSDCBalance, getTokenMetadata, getWalletTokenPortfolio } from "../helpers/token.helper";
 import { serializeBigInt } from "../utils/contract.utils";
@@ -14,12 +14,29 @@ export async function getSoulboundDataController(request: Request, env: Env) {
         if (!tokenId) {
             return errorResponse(400, 'tokenId is required');
         }
-        
-        const data = await getSoulboundData(tokenId, env);
+        const data = await readSoulboundContract(env, 'getNFTData', tokenId);
         const serializedData = serializeBigInt(data);
-        return apiResponse(200, 'Soulbound data fetched successfully', { serializedData });
+        return apiResponse(200, 'Soulbound data fetched successfully', serializedData);
     } catch (err) {
+        console.log(err);
         return errorResponse(500, 'Error fetching soulbound data');
+    }
+}
+
+export async function soulboundTokenURIController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const tokenId = url.searchParams.get("tokenId");
+        
+        if (!tokenId) {
+            return errorResponse(400, 'tokenId is required');
+        }
+
+        const data = await readSoulboundContract(env, 'tokenURI', tokenId);
+        return apiResponse(200, 'Soulbound token URI fetched successfully', data);
+
+    } catch (err) {
+        return errorResponse(500, 'Error fetching soulbound token URI')
     }
 }
 
@@ -99,5 +116,81 @@ export async function getWalletTokenPortfolioController(request: Request, env: E
         return apiResponse(200, 'Wallet token portfolio fetched successfully', serializedResult);
     } catch (err) {
         return errorResponse(500, 'Error fetching wallet token portfolio');
+    }
+}
+
+export async function totalAssetsController(request: Request, env: Env) {
+    try {
+       //const result = await getTotalAssetsMagnifyV3(env);
+        const result = await readMagnifyV3Contract(env, 'totalAssets');
+        const serializedResult = serializeBigInt(result);
+        return apiResponse(200, "totalAssets fetched successfully", { totalAssets: serializedResult });
+    } catch (err) {
+        return errorResponse(500, 'Error fetching total assets V3');
+    }
+}
+
+export async function previewMintController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const shares = url.searchParams.get("shares");
+
+        const result = await readMagnifyV3Contract(env, 'previewMint', shares);
+        const serializedResult = serializeBigInt(result);
+        return apiResponse(200, 'previewMint successful', serializedResult);
+    } catch (err) {
+        console.log(err);
+        return errorResponse(500, 'Error previewMint');
+    }
+}
+
+export async function previewDepositController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const assets = url.searchParams.get("assets");
+
+        const result = await readMagnifyV3Contract(env, 'previewDeposit', assets);
+        const serializedResult = serializeBigInt(result);
+        return apiResponse(200, 'previewDeposit successful', serializedResult);
+    } catch (err) {
+        return errorResponse(500, 'Error previewDepositCtrl');
+    }
+}
+
+export async function previewWithdrawController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const assets = url.searchParams.get("assets");
+
+        const result = await readMagnifyV3Contract(env, 'previewWithdraw', assets);
+        const serializedResult = serializeBigInt(result);
+        return apiResponse(200, 'previewWithdraw successful', serializedResult);
+    } catch (err) {
+        return errorResponse(500, 'Error previewWithdrawCtrl');
+    }
+}
+
+export async function previewRedeemController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const shares = url.searchParams.get("shares");
+
+        const result = await readMagnifyV3Contract(env, 'previewRedeem', shares);
+        const serializedResult = serializeBigInt(result);
+        return apiResponse(200, 'previewRedeem successful', serializedResult);
+    } catch (err) {
+        return errorResponse(500, 'Error previewRedeemCtrl');
+    }
+}
+
+export async function getActiveLoanController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const wallet = url.searchParams.get("wallet");
+
+        const result = await readMagnifyV3Contract(env, 'getActiveLoan', wallet);
+
+    } catch (err) {
+        return errorResponse(500, 'Error getActiveLoanCtrl');
     }
 }

@@ -4,7 +4,7 @@ import { loginController, registerController, getUsersController, grantAdminCont
 import { apiResponse, errorResponse } from './utils/apiResponse.utils';
 import { authMiddleware } from './middleware/auth.middleware';
 import { getAnnouncementsController } from './controller/announcement.controller';
-import { getSoulboundDataController } from './controller/v3.controller';
+import { getSoulboundDataController, previewDepositController, previewMintController, previewRedeemController, previewWithdrawController, soulboundTokenURIController, totalAssetsController } from './controller/v3.controller';
 import { getEthBalanceController, getUSDCBalanceController, getTokenMetadataController, getWalletTokenPortfolioController } from './controller/v3.controller';
 
 import { CORS_HEADERS } from './config/constant';
@@ -50,8 +50,10 @@ export default {
 			case '/announcements':
 				return authMiddleware(request as AuthRequest, env, 
 					() => getAnnouncementsController(request, env));
-			case '/getSoulboundData':
+			case '/soulbound/data':
 				return getSoulboundDataController(request, env);
+			case '/soulbound/uri':
+				return soulboundTokenURIController(request, env);
 			case '/getEthBalance':
 				return getEthBalanceController(request, env);
 			case '/getUSDCBalance':
@@ -60,6 +62,17 @@ export default {
 				return getTokenMetadataController(request, env);
 			case '/getWalletTokens':
 				return getWalletTokenPortfolioController(request, env);
+			case '/assets/total':
+				return totalAssetsController(request, env);
+			case '/v3/preview/mint':
+				return previewMintController(request, env);
+			case '/v3/preview/deposit':
+				return previewDepositController(request, env);
+			case '/v3/preview/withdraw':
+				return previewWithdrawController(request, env);
+			case '/v3/preview/redeem':
+				return previewRedeemController(request, env);
+			case '/v3/loan/active':
 			default:
 				return errorResponse(404, 'Not Found');
 		}
