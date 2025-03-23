@@ -79,7 +79,7 @@ export async function readMagnifyV3Contract(env: Env, viewFunctionName: string, 
             address: `0x${string}`;
             abi: typeof MagnifySoulboundAbi;
             functionName: string;
-            args?: [bigint];
+            args?: [bigint] | [`0x${string}`];
         } = {
             address: env.V3_MAGNIFY_CONTRACT_ADDRESS as `0x${string}`,
             abi: MagnifyV3Abi,
@@ -87,9 +87,13 @@ export async function readMagnifyV3Contract(env: Env, viewFunctionName: string, 
         };
 
         if (params !== undefined) {
-            if (params.startsWith('0x'))
-            argument.args = [BigInt(params)];
+            if (params.startsWith('0x')) {
+                argument.args = [params as `0x${string}`];
+            } else {
+                argument.args = [BigInt(params)];
+            }
         }
+        console.log('\n\nargument:', argument);
         const data = await client.readContract(argument);
         return data;
     } catch (err) {

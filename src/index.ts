@@ -4,7 +4,16 @@ import { loginController, registerController, getUsersController, grantAdminCont
 import { apiResponse, errorResponse } from './utils/apiResponse.utils';
 import { authMiddleware } from './middleware/auth.middleware';
 import { getAnnouncementsController } from './controller/announcement.controller';
-import { getSoulboundDataController, previewDepositController, previewMintController, previewRedeemController, previewWithdrawController, soulboundTokenURIController, totalAssetsController } from './controller/v3.controller';
+import { getSoulboundDataController, 
+	previewDepositController, 
+	previewMintController, 
+	previewRedeemController, 
+	previewWithdrawController, 
+	soulboundTokenURIController, 
+	totalAssetsController,
+	getActiveLoanController,
+	getLoanHistoryController,
+	getAllActiveLoansController } from './controller/v3.controller';
 import { getEthBalanceController, getUSDCBalanceController, getTokenMetadataController, getWalletTokenPortfolioController } from './controller/v3.controller';
 
 import { CORS_HEADERS } from './config/constant';
@@ -73,6 +82,11 @@ export default {
 			case '/v3/preview/redeem':
 				return previewRedeemController(request, env);
 			case '/v3/loan/active':
+				return getActiveLoanController(request, env);
+			case '/v3/loan/history':
+				return getLoanHistoryController(request, env);
+			case '/v3/loans':
+				return getAllActiveLoansController(request, env);
 			default:
 				return errorResponse(404, 'Not Found');
 		}

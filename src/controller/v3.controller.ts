@@ -189,8 +189,32 @@ export async function getActiveLoanController(request: Request, env: Env) {
         const wallet = url.searchParams.get("wallet");
 
         const result = await readMagnifyV3Contract(env, 'getActiveLoan', wallet);
-
+        const serializedResult = serializeBigInt(result);
+        return apiResponse(200, 'getActiveLoan successful', serializedResult);
     } catch (err) {
         return errorResponse(500, 'Error getActiveLoanCtrl');
+    }
+}
+
+export async function getLoanHistoryController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const wallet = url.searchParams.get("wallet");
+
+        const result = await readMagnifyV3Contract(env, 'getLoanHistory', wallet);
+        const serializedResult = serializeBigInt(result);
+        return apiResponse(200, 'getLoanHistory successful', serializedResult);
+    } catch (err) {
+        return errorResponse(500, 'Error getLoanHistoryCtrl');
+    }
+}
+
+export async function getAllActiveLoansController(request: Request, env: Env) {
+    try {
+        const result = await readMagnifyV3Contract(env, 'getAllActiveLoans');
+        const serializedResult = serializeBigInt(result);
+        return apiResponse(200, 'getAllActiveLoans successful', serializedResult);
+    } catch (err) {
+        return errorResponse(500, 'Error getAllActiveLoansCtrl');
     }
 }
