@@ -21,3 +21,9 @@ function hashEncodedBytes(input: Hex.Hex | Bytes.Bytes): HashFunctionOutput {
     const rawDigest = hash.toString(16);
     return { hash, digest: `0x${rawDigest.padStart(64, '0')}` };
 } 
+
+export function convertHexToInteger(hex: string, decimal: number) {
+    const bigInt = BigInt(hex);
+    const result = Number(bigInt) / Math.pow(10, decimal);
+    return result;
+}

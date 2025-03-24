@@ -4,6 +4,9 @@ import { loginController, registerController, getUsersController, grantAdminCont
 import { apiResponse, errorResponse } from './utils/apiResponse.utils';
 import { authMiddleware } from './middleware/auth.middleware';
 import { getAnnouncementsController } from './controller/announcement.controller';
+import { getSoulboundDataController } from './controller/v3.controller';
+import { getEthBalanceController, getUSDCBalanceController, getTokenMetadataController, getWalletTokenPortfolioController } from './controller/v3.controller';
+
 import { CORS_HEADERS } from './config/constant';
 
 export default {
@@ -47,6 +50,16 @@ export default {
 			case '/announcements':
 				return authMiddleware(request as AuthRequest, env, 
 					() => getAnnouncementsController(request, env));
+			case '/getSoulboundData':
+				return getSoulboundDataController(request, env);
+			case '/getEthBalance':
+				return getEthBalanceController(request, env);
+			case '/getUSDCBalance':
+				return getUSDCBalanceController(request, env);
+			case '/getTokenMetadata':
+				return getTokenMetadataController(request, env);
+			case '/getWalletTokens':
+				return getWalletTokenPortfolioController(request, env);
 			default:
 				return errorResponse(404, 'Not Found');
 		}

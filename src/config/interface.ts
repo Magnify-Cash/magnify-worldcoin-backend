@@ -6,6 +6,8 @@ export interface Env {
 	DATABASE_URL: string;
 	JWT_SECRET: string; //
     V2_MAGNIFY_CONTRACT_ADDRESS: string;
+    V3_MAGNIFY_CONTRACT_ADDRESS: string;
+    SOULBOUND_NFT_CONTRACT_ADDRESS: string;
 }
 
 export interface WorldScanTransaction {
