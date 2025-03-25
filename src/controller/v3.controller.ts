@@ -1,7 +1,7 @@
 import { Env } from "../config/interface";
 import { getSoulboundData } from "../helpers/v3.helper";
 import { apiResponse, errorResponse } from "../utils/apiResponse.utils"
-import { getEthBalance, getUSDCBalance, getTokenMetadata, getWalletTokenPortfolio, batchProcessTokenMetadata } from "../helpers/token.helper";
+import { getEthBalance, getUSDCBalance, getTokenMetadata, getWalletTokenPortfolio } from "../helpers/token.helper";
 import { serializeBigInt } from "../utils/contract.utils";
 import { convertHexToInteger } from "../utils/hashUtils";
 
@@ -79,38 +79,25 @@ export async function getWalletTokenPortfolioController(request: Request, env: E
         if (!walletAddress) {
             return errorResponse(400, 'walletAddress is required');
         }
-        
         const portfolio = await getWalletTokenPortfolio(walletAddress, env);
-        const tokenBalances = portfolio.result.tokenBalances;
-        
-        // Dynamically adjust batch size and delay based on token count
-        let batchSize = 5;  // Default batch size
-        let delayMs = 1000; // Default delay in milliseconds
-        
-        const tokenCount = tokenBalances.length;
-        console.log(`Processing ${tokenCount} tokens for wallet ${walletAddress}`);
-        
-        // Adjust parameters based on token count
-        if (tokenCount > 50) {
-            // For very large wallets, use smaller batches and longer delays
-            batchSize = 3;
-            delayMs = 2000;
-        } else if (tokenCount > 20) {
-            // For medium-sized wallets
-            batchSize = 4;
-            delayMs = 1500;
-        } else if (tokenCount < 5) {
-            // For very small wallets, no need to batch
-            batchSize = tokenCount;
-            delayMs = 0;
-        }
-        
-        // Process tokens in batches to avoid rate limiting
-        const serializedResult = await batchProcessTokenMetadata(tokenBalances, env, batchSize, delayMs);
-        
+        const result = portfolio.result.tokenBalances;
+        const serializedPromises =  result.map(async (item: {
+            contractAddress: string,
+            tokenBalance: string
+        }) => {
+           const tokenMetadata = await getTokenMetadata(item.contractAddress, env);
+           const tokenBalance = convertHexToInteger(item.tokenBalance, tokenMetadata.tokenDecimals as number);
+           return {
+            tokenAddress: item.contractAddress,
+            tokenName: tokenMetadata.tokenName,
+            tokenSymbol: tokenMetadata.tokenSymbol,
+            tokenDecimals: tokenMetadata.tokenDecimals,
+            tokenBalance: tokenBalance
+           }
+        })
+        const serializedResult = await Promise.all(serializedPromises);
         return apiResponse(200, 'Wallet token portfolio fetched successfully', serializedResult);
     } catch (err) {
-        console.error("Error in getWalletTokenPortfolioController:", err);
         return errorResponse(500, 'Error fetching wallet token portfolio');
     }
 }
