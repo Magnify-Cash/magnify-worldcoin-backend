@@ -91,11 +91,11 @@ export async function initPublicClient(env: Env) {
         return client;
 } 
 
-export async function rpcBatchCall(rpcUrl: string, method: string, params: any) {
+export async function rpcBatchCall(rpcUrl: string, method: string, params: any, maxRetries = 3) {
     const agent = new httpCall.Agent({
       keepAlive: true,
       maxSockets: 10,
-      timeout: 10000,
+      timeout: 60000,
     });
   
     const payload = {
@@ -105,24 +105,50 @@ export async function rpcBatchCall(rpcUrl: string, method: string, params: any) 
       params,
     };
   
-    try {
-      const response = await axios.post(rpcUrl, payload, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        httpAgent: agent, 
-        timeout: 6000
-      });
-  
-      if (response.data.error) {
-        throw new Error(response.data.error);
+    let retries = 0;
+    let lastError: Error | null = null;
+    
+    while (retries <= maxRetries) {
+      try {
+        const response = await axios.post(rpcUrl, payload, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          httpAgent: agent, 
+          timeout: 6000
+        });
+    
+        if (response.data.error) {
+          throw new Error(response.data.error);
+        }
+    
+        return response.data.result;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error("Error during RPC call");
+        
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        
+        // Check if it's a rate limit error
+        if (errorMessage.includes("limit reached") || errorMessage.includes("rate limit")) {
+          console.warn(`Rate limit reached (attempt ${retries + 1}/${maxRetries + 1}), backing off...`);
+          
+          if (retries < maxRetries) {
+            // Exponential backoff: 2^retries * 1000ms (1s, 2s, 4s, etc.)
+            const backoffTime = Math.pow(2, retries) * 1000;
+            await new Promise(resolve => setTimeout(resolve, backoffTime));
+            retries++;
+            continue;
+          }
+        }
+        
+        // For non-rate limit errors or if we've exhausted retries
+        console.error("RPC Request error:", error);
+        throw lastError;
       }
-  
-      return response.data.result;
-    } catch (error) {
-      console.error("RPC Request error:", error);
-      throw error instanceof Error ? error.message : "Error during RPC call";
     }
+    
+    // This should never be reached as the loop will either return or throw
+    throw lastError || new Error("Unknown error during RPC call");
   }
 
 export function serializeBigInt(obj: any): any {
