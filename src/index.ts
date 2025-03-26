@@ -13,7 +13,9 @@ import { getSoulboundDataController,
 	totalAssetsController,
 	getActiveLoanController,
 	getLoanHistoryController,
-	getAllActiveLoansController } from './controller/v3.controller';
+	getAllActiveLoansController,
+	soulboundGetLoanHistoryDataController,
+	soulboundGetLoanHistoryController } from './controller/v3.controller';
 import { getEthBalanceController, getUSDCBalanceController, getTokenMetadataController, getWalletTokenPortfolioController } from './controller/v3.controller';
 
 import { CORS_HEADERS } from './config/constant';
@@ -63,6 +65,10 @@ export default {
 				return getSoulboundDataController(request, env);
 			case '/soulbound/uri':
 				return soulboundTokenURIController(request, env);
+			case '/soulbound/loan/history':
+				return soulboundGetLoanHistoryController(request, env);
+			case '/soulbound/loan/history/data':
+				return soulboundGetLoanHistoryDataController(request, env);
 			case '/getEthBalance':
 				return getEthBalanceController(request, env);
 			case '/getUSDCBalance':

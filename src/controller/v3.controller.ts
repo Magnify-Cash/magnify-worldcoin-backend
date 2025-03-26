@@ -18,7 +18,6 @@ export async function getSoulboundDataController(request: Request, env: Env) {
         const serializedData = serializeBigInt(data);
         return apiResponse(200, 'Soulbound data fetched successfully', serializedData);
     } catch (err) {
-        console.log(err);
         return errorResponse(500, 'Error fetching soulbound data');
     }
 }
@@ -37,6 +36,38 @@ export async function soulboundTokenURIController(request: Request, env: Env) {
 
     } catch (err) {
         return errorResponse(500, 'Error fetching soulbound token URI')
+    }
+}
+
+export async function soulboundGetLoanHistoryController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const tokenId = url.searchParams.get("tokenId");
+
+        if (!tokenId) {
+            return errorResponse(400, 'tokenId is required');
+        }
+
+        const data = await readSoulboundContract(env, 'getLoanHistory', tokenId);
+        return apiResponse(200, 'Soulbound loan history fetched successfully', data);
+    } catch (err) {
+        return errorResponse(500, 'Error fetching soulbound loan history');
+    }
+}   
+
+export async function soulboundGetLoanHistoryDataController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const tokenId = url.searchParams.get("tokenId");
+
+        if (!tokenId) {
+            return errorResponse(400, 'tokenId is required');
+        }
+
+        const data = await readSoulboundContract(env, 'getLoanHistoryData', tokenId);
+        return apiResponse(200, 'Soulbound loan history data fetched successfully', data);
+    } catch (err) {
+        return errorResponse(500, 'Error fetching soulbound loan history data');
     }
 }
 
@@ -192,6 +223,7 @@ export async function getActiveLoanController(request: Request, env: Env) {
         const serializedResult = serializeBigInt(result);
         return apiResponse(200, 'getActiveLoan successful', serializedResult);
     } catch (err) {
+        console.log(err);
         return errorResponse(500, 'Error getActiveLoanCtrl');
     }
 }

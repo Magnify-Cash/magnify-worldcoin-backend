@@ -1,186 +1,44 @@
 [
-	{
-		"inputs": [],
-		"name": "AlreadyOwnedNFT",
-		"type": "error"
-	},
-	{
-		"inputs": [],
-		"name": "CallerNotAdmin",
-		"type": "error"
-	},
+	{ "inputs": [], "name": "AlreadyOwnedNFT", "type": "error" },
+	{ "inputs": [], "name": "CallerNotAdmin", "type": "error" },
 	{
 		"inputs": [
-			{
-				"internalType": "address",
-				"name": "sender",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			},
-			{
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			}
+			{ "internalType": "address", "name": "sender", "type": "address" },
+			{ "internalType": "uint256", "name": "tokenId", "type": "uint256" },
+			{ "internalType": "address", "name": "owner", "type": "address" }
 		],
 		"name": "ERC721IncorrectOwner",
 		"type": "error"
 	},
 	{
 		"inputs": [
-			{
-				"internalType": "address",
-				"name": "operator",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			}
+			{ "internalType": "address", "name": "operator", "type": "address" },
+			{ "internalType": "uint256", "name": "tokenId", "type": "uint256" }
 		],
 		"name": "ERC721InsufficientApproval",
 		"type": "error"
 	},
+	{ "inputs": [{ "internalType": "address", "name": "approver", "type": "address" }], "name": "ERC721InvalidApprover", "type": "error" },
+	{ "inputs": [{ "internalType": "address", "name": "operator", "type": "address" }], "name": "ERC721InvalidOperator", "type": "error" },
+	{ "inputs": [{ "internalType": "address", "name": "owner", "type": "address" }], "name": "ERC721InvalidOwner", "type": "error" },
+	{ "inputs": [{ "internalType": "address", "name": "receiver", "type": "address" }], "name": "ERC721InvalidReceiver", "type": "error" },
+	{ "inputs": [{ "internalType": "address", "name": "sender", "type": "address" }], "name": "ERC721InvalidSender", "type": "error" },
+	{ "inputs": [{ "internalType": "uint256", "name": "tokenId", "type": "uint256" }], "name": "ERC721NonexistentToken", "type": "error" },
+	{ "inputs": [], "name": "InvalidInitialization", "type": "error" },
+	{ "inputs": [], "name": "NotInitializing", "type": "error" },
+	{ "inputs": [{ "internalType": "address", "name": "owner", "type": "address" }], "name": "OwnableInvalidOwner", "type": "error" },
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "approver",
-				"type": "address"
-			}
-		],
-		"name": "ERC721InvalidApprover",
-		"type": "error"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "operator",
-				"type": "address"
-			}
-		],
-		"name": "ERC721InvalidOperator",
-		"type": "error"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			}
-		],
-		"name": "ERC721InvalidOwner",
-		"type": "error"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "receiver",
-				"type": "address"
-			}
-		],
-		"name": "ERC721InvalidReceiver",
-		"type": "error"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "sender",
-				"type": "address"
-			}
-		],
-		"name": "ERC721InvalidSender",
-		"type": "error"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			}
-		],
-		"name": "ERC721NonexistentToken",
-		"type": "error"
-	},
-	{
-		"inputs": [],
-		"name": "InvalidInitialization",
-		"type": "error"
-	},
-	{
-		"inputs": [],
-		"name": "NotInitializing",
-		"type": "error"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			}
-		],
-		"name": "OwnableInvalidOwner",
-		"type": "error"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "account",
-				"type": "address"
-			}
-		],
+		"inputs": [{ "internalType": "address", "name": "account", "type": "address" }],
 		"name": "OwnableUnauthorizedAccount",
 		"type": "error"
 	},
-	{
-		"inputs": [],
-		"name": "SoulboundTransferNotAllowed",
-		"type": "error"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			}
-		],
-		"name": "TokenIdInvalid",
-		"type": "error"
-	},
+	{ "inputs": [], "name": "SoulboundTransferNotAllowed", "type": "error" },
 	{
 		"anonymous": false,
 		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "approved",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			}
+			{ "indexed": true, "internalType": "address", "name": "owner", "type": "address" },
+			{ "indexed": true, "internalType": "address", "name": "approved", "type": "address" },
+			{ "indexed": true, "internalType": "uint256", "name": "tokenId", "type": "uint256" }
 		],
 		"name": "Approval",
 		"type": "event"
@@ -188,56 +46,24 @@
 	{
 		"anonymous": false,
 		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "operator",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "bool",
-				"name": "approved",
-				"type": "bool"
-			}
+			{ "indexed": true, "internalType": "address", "name": "owner", "type": "address" },
+			{ "indexed": true, "internalType": "address", "name": "operator", "type": "address" },
+			{ "indexed": false, "internalType": "bool", "name": "approved", "type": "bool" }
 		],
 		"name": "ApprovalForAll",
 		"type": "event"
 	},
 	{
 		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": false,
-				"internalType": "uint64",
-				"name": "version",
-				"type": "uint64"
-			}
-		],
+		"inputs": [{ "indexed": false, "internalType": "uint64", "name": "version", "type": "uint64" }],
 		"name": "Initialized",
 		"type": "event"
 	},
 	{
 		"anonymous": false,
 		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "previousOwner",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "newOwner",
-				"type": "address"
-			}
+			{ "indexed": true, "internalType": "address", "name": "previousOwner", "type": "address" },
+			{ "indexed": true, "internalType": "address", "name": "newOwner", "type": "address" }
 		],
 		"name": "OwnershipTransferred",
 		"type": "event"
@@ -245,59 +71,41 @@
 	{
 		"anonymous": false,
 		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "from",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			}
+			{ "indexed": true, "internalType": "address", "name": "from", "type": "address" },
+			{ "indexed": true, "internalType": "address", "name": "to", "type": "address" },
+			{ "indexed": true, "internalType": "uint256", "name": "tokenId", "type": "uint256" }
 		],
 		"name": "Transfer",
 		"type": "event"
 	},
 	{
+		"inputs": [{ "internalType": "contract IMagnifyWorldV3", "name": "_newPool", "type": "address" }],
+		"name": "addMagnifyPool",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
+			{ "internalType": "uint256", "name": "_tokenId", "type": "uint256" },
+			{ "internalType": "uint256", "name": "_index", "type": "uint256" }
 		],
+		"name": "addNewLoan",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [{ "internalType": "address", "name": "", "type": "address" }],
 		"name": "admins",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
+		"outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
 		"stateMutability": "view",
 		"type": "function"
 	},
 	{
 		"inputs": [
-			{
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			}
+			{ "internalType": "address", "name": "to", "type": "address" },
+			{ "internalType": "uint256", "name": "tokenId", "type": "uint256" }
 		],
 		"name": "approve",
 		"outputs": [],
@@ -305,49 +113,23 @@
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			}
-		],
+		"inputs": [{ "internalType": "address", "name": "owner", "type": "address" }],
 		"name": "balanceOf",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
+		"outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
 		"stateMutability": "view",
 		"type": "function"
 	},
 	{
 		"inputs": [],
 		"name": "baseURI",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "",
-				"type": "string"
-			}
-		],
+		"outputs": [{ "internalType": "string", "name": "", "type": "string" }],
 		"stateMutability": "view",
 		"type": "function"
 	},
 	{
 		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_tokenId",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_amount",
-				"type": "uint256"
-			}
+			{ "internalType": "uint256", "name": "_tokenId", "type": "uint256" },
+			{ "internalType": "uint256", "name": "_amount", "type": "uint256" }
 		],
 		"name": "decreaseLoanDefault",
 		"outputs": [],
@@ -355,61 +137,70 @@
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			}
-		],
+		"inputs": [{ "internalType": "uint256", "name": "tokenId", "type": "uint256" }],
 		"name": "getApproved",
+		"outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [{ "internalType": "uint256", "name": "_tokenId", "type": "uint256" }],
+		"name": "getLoanHistory",
 		"outputs": [
 			{
-				"internalType": "address",
+				"components": [
+					{ "internalType": "address", "name": "loanAddress", "type": "address" },
+					{ "internalType": "uint256", "name": "loanIndex", "type": "uint256" }
+				],
+				"internalType": "struct IMagnifyWorldSoulboundNFT.Loan[]",
 				"name": "",
-				"type": "address"
+				"type": "tuple[]"
 			}
 		],
 		"stateMutability": "view",
 		"type": "function"
 	},
 	{
-		"inputs": [
+		"inputs": [{ "internalType": "uint256", "name": "_tokenId", "type": "uint256" }],
+		"name": "getLoanHistoryData",
+		"outputs": [
 			{
-				"internalType": "uint256",
-				"name": "_tokenId",
-				"type": "uint256"
+				"components": [
+					{ "internalType": "bytes32", "name": "loanID", "type": "bytes32" },
+					{ "internalType": "uint256", "name": "tokenId", "type": "uint256" },
+					{ "internalType": "uint256", "name": "loanTimestamp", "type": "uint256" },
+					{ "internalType": "uint256", "name": "repaymentTimestamp", "type": "uint256" },
+					{ "internalType": "address", "name": "borrower", "type": "address" },
+					{ "internalType": "bool", "name": "isDefault", "type": "bool" },
+					{ "internalType": "bool", "name": "isActive", "type": "bool" }
+				],
+				"internalType": "struct IMagnifyWorldV3.LoanData[]",
+				"name": "",
+				"type": "tuple[]"
 			}
 		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getMagnifyPools",
+		"outputs": [{ "internalType": "contract IMagnifyWorldV3[]", "name": "", "type": "address[]" }],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [{ "internalType": "uint256", "name": "_tokenId", "type": "uint256" }],
 		"name": "getNFTData",
 		"outputs": [
 			{
 				"components": [
-					{
-						"internalType": "uint256",
-						"name": "loansRepaid",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "interestPaid",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "loansDefaulted",
-						"type": "uint256"
-					},
-					{
-						"internalType": "address",
-						"name": "owner",
-						"type": "address"
-					},
-					{
-						"internalType": "uint8",
-						"name": "tier",
-						"type": "uint8"
-					}
+					{ "internalType": "uint256", "name": "loansRepaid", "type": "uint256" },
+					{ "internalType": "uint256", "name": "interestPaid", "type": "uint256" },
+					{ "internalType": "uint256", "name": "loansDefaulted", "type": "uint256" },
+					{ "internalType": "address", "name": "owner", "type": "address" },
+					{ "internalType": "uint8", "name": "tier", "type": "uint8" },
+					{ "internalType": "bool", "name": "ongoingLoan", "type": "bool" }
 				],
 				"internalType": "struct IMagnifyWorldSoulboundNFT.NFTData",
 				"name": "",
@@ -420,17 +211,30 @@
 		"type": "function"
 	},
 	{
+		"inputs": [],
+		"name": "getTotalBorrowed",
+		"outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getTotalDefaults",
+		"outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "getTotalLiquidity",
+		"outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_tokenId",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_amount",
-				"type": "uint256"
-			}
+			{ "internalType": "uint256", "name": "_tokenId", "type": "uint256" },
+			{ "internalType": "uint256", "name": "_amount", "type": "uint256" }
 		],
 		"name": "increaseLoanDefault",
 		"outputs": [],
@@ -439,16 +243,8 @@
 	},
 	{
 		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_tokenId",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_interestPaid",
-				"type": "uint256"
-			}
+			{ "internalType": "uint256", "name": "_tokenId", "type": "uint256" },
+			{ "internalType": "uint256", "name": "_interestPaid", "type": "uint256" }
 		],
 		"name": "increaseloanRepayment",
 		"outputs": [],
@@ -457,16 +253,8 @@
 	},
 	{
 		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_name",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "_symbol",
-				"type": "string"
-			}
+			{ "internalType": "string", "name": "_name", "type": "string" },
+			{ "internalType": "string", "name": "_symbol", "type": "string" }
 		],
 		"name": "initialize",
 		"outputs": [],
@@ -475,40 +263,38 @@
 	},
 	{
 		"inputs": [
-			{
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "operator",
-				"type": "address"
-			}
+			{ "internalType": "address", "name": "owner", "type": "address" },
+			{ "internalType": "address", "name": "operator", "type": "address" }
 		],
 		"name": "isApprovedForAll",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
+		"outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
 		"stateMutability": "view",
 		"type": "function"
 	},
 	{
 		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_to",
-				"type": "address"
-			},
-			{
-				"internalType": "uint8",
-				"name": "_tier",
-				"type": "uint8"
-			}
+			{ "internalType": "uint256", "name": "", "type": "uint256" },
+			{ "internalType": "uint256", "name": "", "type": "uint256" }
+		],
+		"name": "loanHistory",
+		"outputs": [
+			{ "internalType": "address", "name": "loanAddress", "type": "address" },
+			{ "internalType": "uint256", "name": "loanIndex", "type": "uint256" }
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+		"name": "magnifyPools",
+		"outputs": [{ "internalType": "contract IMagnifyWorldV3", "name": "", "type": "address" }],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{ "internalType": "address", "name": "_to", "type": "address" },
+			{ "internalType": "uint8", "name": "_tier", "type": "uint8" }
 		],
 		"name": "mintNFT",
 		"outputs": [],
@@ -518,51 +304,20 @@
 	{
 		"inputs": [],
 		"name": "name",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "",
-				"type": "string"
-			}
-		],
+		"outputs": [{ "internalType": "string", "name": "", "type": "string" }],
 		"stateMutability": "view",
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
+		"inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
 		"name": "nftData",
 		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "loansRepaid",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "interestPaid",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "loansDefaulted",
-				"type": "uint256"
-			},
-			{
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			},
-			{
-				"internalType": "uint8",
-				"name": "tier",
-				"type": "uint8"
-			}
+			{ "internalType": "uint256", "name": "loansRepaid", "type": "uint256" },
+			{ "internalType": "uint256", "name": "interestPaid", "type": "uint256" },
+			{ "internalType": "uint256", "name": "loansDefaulted", "type": "uint256" },
+			{ "internalType": "address", "name": "owner", "type": "address" },
+			{ "internalType": "uint8", "name": "tier", "type": "uint8" },
+			{ "internalType": "bool", "name": "ongoingLoan", "type": "bool" }
 		],
 		"stateMutability": "view",
 		"type": "function"
@@ -570,59 +325,30 @@
 	{
 		"inputs": [],
 		"name": "owner",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
+		"outputs": [{ "internalType": "address", "name": "", "type": "address" }],
 		"stateMutability": "view",
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			}
-		],
+		"inputs": [{ "internalType": "uint256", "name": "tokenId", "type": "uint256" }],
 		"name": "ownerOf",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
+		"outputs": [{ "internalType": "address", "name": "", "type": "address" }],
 		"stateMutability": "view",
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "renounceOwnership",
+		"inputs": [{ "internalType": "uint256", "name": "_tokenId", "type": "uint256" }],
+		"name": "removeOngoingLoan",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
+	{ "inputs": [], "name": "renounceOwnership", "outputs": [], "stateMutability": "nonpayable", "type": "function" },
 	{
 		"inputs": [
-			{
-				"internalType": "address",
-				"name": "from",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			}
+			{ "internalType": "address", "name": "from", "type": "address" },
+			{ "internalType": "address", "name": "to", "type": "address" },
+			{ "internalType": "uint256", "name": "tokenId", "type": "uint256" }
 		],
 		"name": "safeTransferFrom",
 		"outputs": [],
@@ -631,26 +357,10 @@
 	},
 	{
 		"inputs": [
-			{
-				"internalType": "address",
-				"name": "from",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			},
-			{
-				"internalType": "bytes",
-				"name": "data",
-				"type": "bytes"
-			}
+			{ "internalType": "address", "name": "from", "type": "address" },
+			{ "internalType": "address", "name": "to", "type": "address" },
+			{ "internalType": "uint256", "name": "tokenId", "type": "uint256" },
+			{ "internalType": "bytes", "name": "data", "type": "bytes" }
 		],
 		"name": "safeTransferFrom",
 		"outputs": [],
@@ -659,16 +369,8 @@
 	},
 	{
 		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_address",
-				"type": "address"
-			},
-			{
-				"internalType": "bool",
-				"name": "_allow",
-				"type": "bool"
-			}
+			{ "internalType": "address", "name": "_address", "type": "address" },
+			{ "internalType": "bool", "name": "_allow", "type": "bool" }
 		],
 		"name": "setAdmin",
 		"outputs": [],
@@ -677,16 +379,8 @@
 	},
 	{
 		"inputs": [
-			{
-				"internalType": "address",
-				"name": "operator",
-				"type": "address"
-			},
-			{
-				"internalType": "bool",
-				"name": "approved",
-				"type": "bool"
-			}
+			{ "internalType": "address", "name": "operator", "type": "address" },
+			{ "internalType": "bool", "name": "approved", "type": "bool" }
 		],
 		"name": "setApprovalForAll",
 		"outputs": [],
@@ -694,99 +388,52 @@
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_newBaseURI",
-				"type": "string"
-			}
-		],
+		"inputs": [{ "internalType": "string", "name": "_newBaseURI", "type": "string" }],
 		"name": "setBaseURI",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "bytes4",
-				"name": "interfaceId",
-				"type": "bytes4"
-			}
-		],
+		"inputs": [{ "internalType": "uint256", "name": "_tokenId", "type": "uint256" }],
+		"name": "setOngoingLoan",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [{ "internalType": "bytes4", "name": "interfaceId", "type": "bytes4" }],
 		"name": "supportsInterface",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
+		"outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
 		"stateMutability": "view",
 		"type": "function"
 	},
 	{
 		"inputs": [],
 		"name": "symbol",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "",
-				"type": "string"
-			}
-		],
+		"outputs": [{ "internalType": "string", "name": "", "type": "string" }],
 		"stateMutability": "view",
 		"type": "function"
 	},
 	{
 		"inputs": [],
 		"name": "tokenCount",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
+		"outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
 		"stateMutability": "view",
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			}
-		],
+		"inputs": [{ "internalType": "uint256", "name": "tokenId", "type": "uint256" }],
 		"name": "tokenURI",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "",
-				"type": "string"
-			}
-		],
+		"outputs": [{ "internalType": "string", "name": "", "type": "string" }],
 		"stateMutability": "view",
 		"type": "function"
 	},
 	{
 		"inputs": [
-			{
-				"internalType": "address",
-				"name": "from",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "to",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "tokenId",
-				"type": "uint256"
-			}
+			{ "internalType": "address", "name": "from", "type": "address" },
+			{ "internalType": "address", "name": "to", "type": "address" },
+			{ "internalType": "uint256", "name": "tokenId", "type": "uint256" }
 		],
 		"name": "transferFrom",
 		"outputs": [],
@@ -794,13 +441,7 @@
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "newOwner",
-				"type": "address"
-			}
-		],
+		"inputs": [{ "internalType": "address", "name": "newOwner", "type": "address" }],
 		"name": "transferOwnership",
 		"outputs": [],
 		"stateMutability": "nonpayable",
@@ -808,16 +449,8 @@
 	},
 	{
 		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "_tokenId",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint8",
-				"name": "_newTier",
-				"type": "uint8"
-			}
+			{ "internalType": "uint256", "name": "_tokenId", "type": "uint256" },
+			{ "internalType": "uint8", "name": "_newTier", "type": "uint8" }
 		],
 		"name": "upgradeTier",
 		"outputs": [],
@@ -825,21 +458,9 @@
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
+		"inputs": [{ "internalType": "address", "name": "", "type": "address" }],
 		"name": "userToId",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
+		"outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
 		"stateMutability": "view",
 		"type": "function"
 	}

@@ -2,7 +2,7 @@ import { createWalletClient, http, createPublicClient } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { Bytes, Hex, Hash } from 'ox';
 import { ACTION_TO_TIER, Env, ClaimAction } from '../config/interface';
-import { worldchain } from 'viem/chains';
+import { worldchain, worldchainSepolia } from 'viem/chains';
 import { V1_MAGNIFY_CONTRACT_ADDRESS, WORLDCHAIN_RPC_URL } from '../config/constant';
 import axios from 'axios';
 import httpCall from 'http';
@@ -85,7 +85,7 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
 
 export async function initPublicClient(env: Env) {
         const client = createPublicClient({
-            chain: worldchain,
+            chain: worldchainSepolia,
             transport: http(WORLDCHAIN_RPC_URL),
         });
         return client;
