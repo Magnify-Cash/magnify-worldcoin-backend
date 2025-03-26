@@ -4,7 +4,17 @@ import { apiResponse, errorResponse } from "../utils/apiResponse.utils"
 import { getEthBalance, getUSDCBalance, getTokenMetadata, getWalletTokenPortfolio } from "../helpers/token.helper";
 import { serializeBigInt } from "../utils/contract.utils";
 import { convertHexToInteger } from "../utils/hashUtils";
+import { TOKEN_METADATA } from "../config/constant";
 
+// Create a map of contract addresses to metadata for efficient lookup - moved outside function for better performance
+const TOKEN_ADDRESS_MAP: Record<string, typeof TOKEN_METADATA[keyof typeof TOKEN_METADATA]> = {
+    [TOKEN_METADATA.WLD.tokenAddress.toLowerCase()]: TOKEN_METADATA.WLD,
+    [TOKEN_METADATA.USDC.tokenAddress.toLowerCase()]: TOKEN_METADATA.USDC,
+    [TOKEN_METADATA.ORO.tokenAddress.toLowerCase()]: TOKEN_METADATA.ORO
+};
+
+// Set of addresses we care about for fast lookup
+const TRACKED_ADDRESSES = new Set(Object.keys(TOKEN_ADDRESS_MAP));
 
 export async function getSoulboundDataController(request: Request, env: Env) {
     try {
@@ -75,28 +85,59 @@ export async function getWalletTokenPortfolioController(request: Request, env: E
     try {
         const url = new URL(request.url);
         const walletAddress = url.searchParams.get("wallet");
-
+        
         if (!walletAddress) {
             return errorResponse(400, 'walletAddress is required');
         }
-        const portfolio = await getWalletTokenPortfolio(walletAddress, env);
-        const result = portfolio.result.tokenBalances;
-        const serializedPromises =  result.map(async (item: {
-            contractAddress: string,
-            tokenBalance: string
-        }) => {
-           const tokenMetadata = await getTokenMetadata(item.contractAddress, env);
-           const tokenBalance = convertHexToInteger(item.tokenBalance, tokenMetadata.tokenDecimals as number);
-           return {
-            tokenAddress: item.contractAddress,
-            tokenName: tokenMetadata.tokenName,
-            tokenSymbol: tokenMetadata.tokenSymbol,
-            tokenDecimals: tokenMetadata.tokenDecimals,
-            tokenBalance: tokenBalance
-           }
-        })
-        const serializedResult = await Promise.all(serializedPromises);
-        return apiResponse(200, 'Wallet token portfolio fetched successfully', serializedResult);
+        
+        // Start both API calls in parallel
+        const [portfolioPromise, ethBalancePromise] = await Promise.all([
+            getWalletTokenPortfolio(walletAddress, env),
+            getEthBalance(walletAddress, env)
+        ]);
+        
+        const portfolio = portfolioPromise;
+        const ethBalance = ethBalancePromise;
+        
+        // Initialize with ETH balance already calculated to save processing time later
+        const tokenPortfolio: Array<{
+            tokenAddress?: string;
+            tokenName: string;
+            tokenSymbol?: string;
+            tokenDecimals: number;
+            tokenBalance: number;
+        }> = [{
+            tokenName: 'ETH',
+            tokenSymbol: 'ETH',
+            tokenDecimals: 18,
+            tokenBalance: Number(serializeBigInt(ethBalance)) / 10 ** 18
+        }];
+        
+        // Process each token balance
+        const tokenBalances = portfolio.result.tokenBalances;
+        
+        for (const token of tokenBalances) {
+            const contractAddress = token.contractAddress.toLowerCase();
+            
+            // Only process if it's one of our tracked tokens (fast lookup with Set)
+            if (TRACKED_ADDRESSES.has(contractAddress)) {
+                const metadata = TOKEN_ADDRESS_MAP[contractAddress];
+                const tokenBalance = convertHexToInteger(token.tokenBalance, metadata.tokenDecimals);
+                
+                // Only add tokens with non-zero balance for efficiency
+                if (tokenBalance > 0) {
+                    tokenPortfolio.push({
+                        tokenAddress: metadata.tokenAddress,
+                        tokenName: metadata.tokenName,
+                        tokenSymbol: metadata.tokenSymbol,
+                        tokenDecimals: metadata.tokenDecimals,
+                        tokenBalance: tokenBalance
+                    });
+                }
+            }
+        }
+        
+        return apiResponse(200, 'Wallet token portfolio fetched successfully', tokenPortfolio);
     } catch (err) {
         return errorResponse(500, 'Error fetching wallet token portfolio');
     }
