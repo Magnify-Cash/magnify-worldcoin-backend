@@ -4,7 +4,6 @@ import USDCAbi from "../config/contracts/USDC.json";
 import { USDC_ADDRESS, WORLDCHAIN_ALCHEMY_RPC_URL, WORLDCHAIN_RPC_URL } from "../config/constant";
 import axios from "axios";
 import {ethers} from 'ethers';
-import { convertHexToInteger } from "../utils/hashUtils";
 
 
 export async function getEthBalance(walletAddress: string, env: Env) {
@@ -59,62 +58,6 @@ export async function getTokenMetadata(tokenAddress: string, env: Env) {
         console.log(err);
         throw err;
     }
-}
-
-/**
- * Process token metadata in batches to avoid rate limiting
- * @param tokens Array of token objects with contractAddress and tokenBalance
- * @param env Environment variables
- * @param batchSize Number of tokens to process in each batch (default: 5)
- * @param delayMs Delay between batches in milliseconds (default: 1000)
- */
-export async function batchProcessTokenMetadata(
-    tokens: Array<{ contractAddress: string, tokenBalance: string }>, 
-    env: Env,
-    batchSize = 5,
-    delayMs = 1000
-) {
-    // Using fixed values: batchSize=5, delayMs=1000
-    const results = [];
-    
-    // Process tokens in batches
-    for (let i = 0; i < tokens.length; i += batchSize) {
-        const batch = tokens.slice(i, i + batchSize);
-        
-        // Process current batch
-        const batchPromises = batch.map(async (item) => {
-            try {
-                const tokenMetadata = await getTokenMetadata(item.contractAddress, env);
-                const tokenBalance = convertHexToInteger(item.tokenBalance, tokenMetadata.tokenDecimals as number);
-                
-                return {
-                    tokenAddress: item.contractAddress,
-                    tokenName: tokenMetadata.tokenName,
-                    tokenSymbol: tokenMetadata.tokenSymbol,
-                    tokenDecimals: tokenMetadata.tokenDecimals,
-                    tokenBalance: tokenBalance
-                };
-            } catch (err) {
-                console.error(`Error processing token ${item.contractAddress}:`, err);
-                // Return partial data if possible
-                return {
-                    tokenAddress: item.contractAddress,
-                    tokenBalance: item.tokenBalance,
-                    error: 'Failed to fetch complete metadata'
-                };
-            }
-        });
-        
-        const batchResults = await Promise.all(batchPromises);
-        results.push(...batchResults);
-        
-        // Delay before processing the next batch (only if not the last batch)
-        if (i + batchSize < tokens.length) {
-            await new Promise(resolve => setTimeout(resolve, delayMs));
-        }
-    }
-    
-    return results;
 }
 
 export async function getWalletTokenPortfolio(walletAddress: string, env: Env) {

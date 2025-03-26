@@ -96,7 +96,7 @@ export async function sendWorldScanNotificationController(request: Request, env:
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${env.WORLDCOIN_API_KEY}`,
-                    'User-Agent': 'Cloudflare-Worker/1.0',
+                    'User-Agent': 'Cloudflare-Worker/1.0'
                 }
             }
         );

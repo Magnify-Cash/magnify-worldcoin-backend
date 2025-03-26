@@ -1,7 +1,7 @@
 import { Env } from "../config/interface";
 import { getSoulboundData } from "../helpers/v3.helper";
 import { apiResponse, errorResponse } from "../utils/apiResponse.utils"
-import { getEthBalance, getUSDCBalance, getTokenMetadata, getWalletTokenPortfolio, batchProcessTokenMetadata } from "../helpers/token.helper";
+import { getEthBalance, getUSDCBalance, getTokenMetadata, getWalletTokenPortfolio } from "../helpers/token.helper";
 import { serializeBigInt } from "../utils/contract.utils";
 import { convertHexToInteger } from "../utils/hashUtils";
 import { TOKEN_METADATA } from "../config/constant";
@@ -139,7 +139,6 @@ export async function getWalletTokenPortfolioController(request: Request, env: E
         
         return apiResponse(200, 'Wallet token portfolio fetched successfully', tokenPortfolio);
     } catch (err) {
-        console.error("Error in getWalletTokenPortfolioController:", err);
         return errorResponse(500, 'Error fetching wallet token portfolio');
     }
 }
