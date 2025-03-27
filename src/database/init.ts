@@ -71,19 +71,4 @@ export async function closeConnection(connection: Sequelize | null): Promise<voi
   }
 }
 
-// Test the connection
-// export const testConnection = async (): Promise<void> => {
-//   try {
-//     const env = {
-//       DATABASE_URL: process.env.DATABASE_URL || '',
-//       NODE_ENV: process.env.NODE_ENV || 'development'
-//     };
-//     const sequelize = getConnection(env);
-//     await sequelize.authenticate();
-//     console.log('Successfully connected to PostgreSQL database');
-//   } catch (error) {
-//     console.error('Error connecting to the database:', error);
-//   }
-// };
-
 export default getConnection;

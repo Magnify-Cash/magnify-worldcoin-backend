@@ -14,8 +14,21 @@ import { getSoulboundDataController,
 	getActiveLoanController,
 	getLoanHistoryController,
 	getAllActiveLoansController,
+	getPoolActivationDateController,
 	soulboundGetLoanHistoryDataController,
-	soulboundGetLoanHistoryController } from './controller/v3.controller';
+	soulboundGetLoanHistoryController,
+	soulboundGetPoolAddressController,
+	soulboundGetUserTokenIdController,
+	getPoolLpSymbolController,
+	getPoolTierController,
+	totalSupplyController,
+	getPoolTreasuryFeeController,
+	getPoolLoanDurationController,
+	getPoolLoanInterestRateController,
+	getPoolStatusController,
+	getUserMaxDepositController,
+	getUserMaxPoolDataController
+ } from './controller/v3.controller';
 import { getEthBalanceController, getUSDCBalanceController, getTokenMetadataController, getWalletTokenPortfolioController } from './controller/v3.controller';
 
 import { CORS_HEADERS } from './config/constant';
@@ -69,6 +82,10 @@ export default {
 				return soulboundGetLoanHistoryController(request, env);
 			case '/soulbound/loan/history/data':
 				return soulboundGetLoanHistoryDataController(request, env);
+			case '/soulbound/user/nft':
+				return soulboundGetUserTokenIdController(request, env);
+			case '/soulbound/pools/address':
+				return soulboundGetPoolAddressController(request, env);
 			case '/getEthBalance':
 				return getEthBalanceController(request, env);
 			case '/getUSDCBalance':
@@ -77,8 +94,6 @@ export default {
 				return getTokenMetadataController(request, env);
 			case '/getWalletTokens':
 				return getWalletTokenPortfolioController(request, env);
-			case '/assets/total':
-				return totalAssetsController(request, env);
 			case '/v3/preview/mint':
 				return previewMintController(request, env);
 			case '/v3/preview/deposit':
@@ -93,9 +108,33 @@ export default {
 				return getLoanHistoryController(request, env);
 			case '/v3/loans':
 				return getAllActiveLoansController(request, env);
+			case '/v3/pool/activation':
+				return getPoolActivationDateController(request, env);
+			case '/v3/pool/symbol':
+				return getPoolLpSymbolController(request, env);
+			case '/v3/pool/tier':
+				return getPoolTierController(request, env);
+			case '/v3/pool/balance/usdc':
+				return totalAssetsController(request, env);
+			case '/v3/pool/balance/lp':
+				return totalSupplyController(request, env);
+			case '/v3/pool/fee/treasury':
+				return getPoolTreasuryFeeController(request, env);
+			case '/v3/pool/loan/duration':
+				return getPoolLoanDurationController(request, env);
+			case '/v3/pool/loan/interest':
+				return getPoolLoanInterestRateController(request, env);
+			case '/v3/pool/status':
+				return getPoolStatusController(request, env);
+			case '/v3/user/max/data':
+				return getUserMaxPoolDataController(request, env);
 			default:
 				return errorResponse(404, 'Not Found');
 		}
 	},
 } ;
 //satisfies ExportedHandler<Env>;
+
+
+// cron job calls process processOutdatedLoans()
+// 24 hours
