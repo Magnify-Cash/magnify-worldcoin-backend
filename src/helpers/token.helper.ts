@@ -55,7 +55,6 @@ export async function getTokenMetadata(tokenAddress: string, env: Env) {
             tokenDecimals: parseInt(ethers.AbiCoder.defaultAbiCoder().decode(["uint8"], decimals)[0]),
         };
     } catch (err) {
-        console.log(err);
         throw err;
     }
 }

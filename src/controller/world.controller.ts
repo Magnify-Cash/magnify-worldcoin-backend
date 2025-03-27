@@ -73,7 +73,6 @@ export async function txHistoryController(request: Request, env: Env) {
           }));
         return apiResponse(200, 'Transaction history retrieved', formattedTransactions);
     } catch (error) {
-        console.log(error);
         return errorResponse(500, 'Failed to retrieve transaction history');
     }
 }
