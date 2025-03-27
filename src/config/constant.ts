@@ -19,3 +19,24 @@ export const WORLDCHAIN_RPC_URL = "https://worldchain-sepolia.gateway.tenderly.c
 export const WORLDCHAIN_ALCHEMY_RPC_URL = "https://worldchain-mainnet.g.alchemy.com/v2/Cj_65mRSyh2uxEc9RCI6JhMQSOVwz56m"
 
 export const SALT_ROUNDS = 10;
+
+export const TOKEN_METADATA = {
+	WLD: {
+		tokenAddress: "0x2cfc85d8e48f8eab294be644d9e25c3030863003",
+		tokenName: "Worldcoin",
+		tokenSymbol: "WLD",
+		tokenDecimals: 18,
+	},
+	USDC: {
+		tokenAddress: "0x79a02482a880bce3f13e09da970dc34db4cd24d1",
+		tokenName: "Bridged USDC (world-chain-mainnet)",
+		tokenSymbol: "USDC.e",
+		tokenDecimals: 6,
+	},
+	ORO: {
+		tokenAddress: "0xcd1e32b86953d79a6ac58e813d2ea7a1790cab63",
+		tokenName: "ORO",
+		tokenSymbol: "ORO",
+		tokenDecimals: 18,
+	}
+}
