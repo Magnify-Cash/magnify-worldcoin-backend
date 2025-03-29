@@ -26,8 +26,11 @@ import { getSoulboundDataController,
 	getPoolLoanDurationController,
 	getPoolLoanInterestRateController,
 	getPoolStatusController,
-	getUserMaxDepositController,
-	getUserMaxPoolDataController
+	getUserMaxPoolDataController,
+	getPoolLiquidityController,
+	getPoolEndTimestampController,
+	getPoolNameController,
+	triggerProcessDefaultPoolController
  } from './controller/v3.controller';
 import { getEthBalanceController, getUSDCBalanceController, getTokenMetadataController, getWalletTokenPortfolioController } from './controller/v3.controller';
 
@@ -108,8 +111,12 @@ export default {
 				return getLoanHistoryController(request, env);
 			case '/v3/loans':
 				return getAllActiveLoansController(request, env);
+			case '/v3/pool/name':
+				return getPoolNameController(request, env);
 			case '/v3/pool/activation':
 				return getPoolActivationDateController(request, env);
+			case '/v3/pool/deactivation':
+				return getPoolEndTimestampController(request, env);
 			case '/v3/pool/symbol':
 				return getPoolLpSymbolController(request, env);
 			case '/v3/pool/tier':
@@ -126,14 +133,19 @@ export default {
 				return getPoolLoanInterestRateController(request, env);
 			case '/v3/pool/status':
 				return getPoolStatusController(request, env);
+			case '/v3/pool/liquidity':
+				return getPoolLiquidityController(request, env);
 			case '/v3/user/max/data':
 				return getUserMaxPoolDataController(request, env);
 			default:
 				return errorResponse(404, 'Not Found');
 		}
 	},
-} ;
-//satisfies ExportedHandler<Env>;
+	async scheduled(controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+		console.log('Scheduled task executed');
+		await triggerProcessDefaultPoolController(env);
+	}
+} satisfies ExportedHandler<Env>;
 
 
 // cron job calls process processOutdatedLoans()

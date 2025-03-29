@@ -607,3 +607,72 @@ export async function getUserMaxPoolDataController(request: Request, env: Env) {
     }
 }
 
+export async function getPoolLiquidityController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const contractAddress = url.searchParams.get("contract");
+
+        if (!contractAddress) {
+            return errorResponse(400, 'contractAddress is required');
+        }
+
+        const result = await readMagnifyV3Contract(env, contractAddress, 'liquidity');
+        const serializedResult = serializeBigInt(result) / 10 ** 6;
+        return apiResponse(200, 'getPoolLiquidity successful', { liquidity: serializedResult });
+        
+    } catch (err) {
+        return errorResponse(500, 'Error getPoolLiquidityCtrl');
+    }
+}
+
+export async function getPoolEndTimestampController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const contractAddress = url.searchParams.get("contract");
+
+        if (!contractAddress) {
+            return errorResponse(400, 'contractAddress is required');
+        }
+
+        const result = await readMagnifyV3Contract(env, contractAddress, 'endTimestamp');
+        const serializedResult = serializeBigInt(result);
+
+        const date = new Date(Number(serializedResult) * 1000); // Convert to milliseconds
+        const formattedDate = date.toISOString()
+            .replace('T', ' ')      // Replace T with space
+            .replace(/\.\d+Z$/, ''); // Remove milliseconds and Z
+        
+        return apiResponse(200, 'getPoolDeactivationDate successful', { 
+            timestamp: serializedResult,
+            formattedDate: formattedDate 
+        });
+    } catch (err) {
+        return errorResponse(500, 'Error getPoolEndTimestampCtrl');
+    }
+}
+
+export async function getPoolNameController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const contractAddress = url.searchParams.get("contract");
+
+        if (!contractAddress) {
+            return errorResponse(400, 'contractAddress is required');
+        }
+
+        const result = await readMagnifyV3Contract(env, contractAddress, 'name');
+        return apiResponse(200, 'getPoolName successful', { name: result });
+    } catch (err) {
+        return errorResponse(500, 'Error getPoolNameCtrl');
+    }
+}
+
+export async function triggerProcessDefaultPoolController(env: Env) {
+    try {
+        const poolAddresses = await readSoulboundContract(env, 'getMagnifyPools');
+        console.log(poolAddresses);
+    } catch (err) {
+        throw err;
+    }
+}
+
