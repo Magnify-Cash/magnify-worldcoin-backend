@@ -462,7 +462,7 @@ export async function getPoolTreasuryFeeController(request: Request, env: Env) {
 
         const result = await readMagnifyV3Contract(env, contractAddress, 'treasuryFee');
         const serializedResult = serializeBigInt(result) / 10 ** 2;
-        return apiResponse(200, 'getPoolTreasuryFee successful', { treasuryFee: `${serializedResult}%` });
+        return apiResponse(200, 'getPoolTreasuryFee successful', { treasuryFee: `${serializedResult}` });
     } catch (err) {
         return errorResponse(500, 'Error getPoolTreasuryFeeCtrl');
     }
@@ -496,7 +496,7 @@ export async function getPoolLoanInterestRateController(request: Request, env: E
         
         const result = await readMagnifyV3Contract(env, contractAddress, 'loanInterestRate');
         const serializedResult = serializeBigInt(result) / 10 ** 2;
-        return apiResponse(200, 'getPoolLoanInterestRate successful', { interestRate: `${serializedResult}%` });
+        return apiResponse(200, 'getPoolLoanInterestRate successful', { interestRate: `${serializedResult}` });
     } catch (err) {
         return errorResponse(500, 'Error getPoolLoanInterestRateCtrl');
     }
