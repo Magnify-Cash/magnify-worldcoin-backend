@@ -32,6 +32,7 @@ import { getSoulboundDataController,
 	getPoolNameController,
 	getPoolOriginationFeeController,
 	getPoolLoanAmountController,
+	getPoolWarmupDurationTestnetController,
 	triggerProcessDefaultPoolController
  } from './controller/v3.controller';
 import { getEthBalanceController, getUSDCBalanceController, getTokenMetadataController, getWalletTokenPortfolioController } from './controller/v3.controller';
@@ -119,6 +120,8 @@ export default {
 				return getPoolActivationDateController(request, env);
 			case '/v3/pool/deactivation':
 				return getPoolEndTimestampController(request, env);
+			case '/v3/pool/warmup':
+				return getPoolWarmupDurationTestnetController(request, env);
 			case '/v3/pool/symbol':
 				return getPoolLpSymbolController(request, env);
 			case '/v3/pool/tier':

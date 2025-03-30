@@ -7,7 +7,7 @@ import { convertHexToInteger } from "../utils/hashUtils";
 import { ethers } from "ethers";
 import { WORLDCHAIN_RPC_URL, WORLDCHAIN_RPC_URL_V2, WORLDCHAIN_RPC_URL_V3 } from "../config/constant";
 import { rpcBatchCall } from "../utils/contract.utils";
-
+import { getBlockTimestamp } from "../helpers/v3.helper";
 // query params of the pool
 import { TOKEN_METADATA } from "../config/constant";
 
@@ -737,6 +737,43 @@ export async function getPoolLoanAmountController(request: Request, env: Env) {
         return apiResponse(200, 'getPoolLoanAmount successful', { loanAmount: serializedResult });
     } catch (err) {
         return errorResponse(500, 'Error getPoolLoanAmountCtrl');
+    }
+}
+
+export async function getPoolWarmupDurationTestnetController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const contractAddress = url.searchParams.get("contract");
+
+        if (!contractAddress) {
+            return errorResponse(400, 'contractAddress is required');
+        }
+
+        let deployedBlockNumber;
+        if (contractAddress === '0x6892f50c8a2ff41c8fd58c2405b0fb29ff77aa1c') {
+            deployedBlockNumber = 11214391;
+        } else if (contractAddress === '0x0ab2554e4c8d4d7c75c4fe6314a4ef62be800530') {
+            deployedBlockNumber = 11388448;
+        } else {
+            return errorResponse(400, 'Unknown contract address, no deployment block number found');
+        }
+
+        const deployedBlockTimestamp = await getBlockTimestamp(env, deployedBlockNumber);
+        const startTimestampResult = await readMagnifyV3Contract(env, contractAddress, 'startTimestamp');
+        const startTimestamp = Number(serializeBigInt(startTimestampResult));
+        
+        // Calculate warmup period in seconds (ensure both are the same type)
+        const warmupPeriodSeconds = startTimestamp - Number(deployedBlockTimestamp);
+        // Convert to days (86400 seconds in a day)
+        const warmupPeriodDays = warmupPeriodSeconds / 86400;
+
+        const result = {
+            warmupPeriodDays: parseFloat(warmupPeriodDays.toFixed(2))
+        }
+        return apiResponse(200, 'Warmup period calculated successfully', serializeBigInt(result));
+    } catch (err) {
+        console.log(err);
+        return errorResponse(500, 'Error calculating pool warmup duration');
     }
 }
 
