@@ -30,6 +30,8 @@ import { getSoulboundDataController,
 	getPoolLiquidityController,
 	getPoolEndTimestampController,
 	getPoolNameController,
+	getPoolOriginationFeeController,
+	getPoolLoanAmountController,
 	triggerProcessDefaultPoolController
  } from './controller/v3.controller';
 import { getEthBalanceController, getUSDCBalanceController, getTokenMetadataController, getWalletTokenPortfolioController } from './controller/v3.controller';
@@ -131,6 +133,10 @@ export default {
 				return getPoolLoanDurationController(request, env);
 			case '/v3/pool/loan/interest':
 				return getPoolLoanInterestRateController(request, env);
+			case '/v3/pool/loan/amount':
+				return getPoolLoanAmountController(request, env);
+			case '/v3/pool/fee/origination':
+				return getPoolOriginationFeeController(request, env);
 			case '/v3/pool/status':
 				return getPoolStatusController(request, env);
 			case '/v3/pool/liquidity':

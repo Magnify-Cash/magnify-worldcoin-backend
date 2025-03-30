@@ -667,6 +667,40 @@ export async function getPoolNameController(request: Request, env: Env) {
     }
 }
 
+export async function getPoolOriginationFeeController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const contractAddress = url.searchParams.get("contract");
+
+        if (!contractAddress) {
+            return errorResponse(400, 'contractAddress is required');
+        }
+
+        const result = await readMagnifyV3Contract(env, contractAddress, 'originationFee');
+        const serializedResult = serializeBigInt(result) / 10 ** 2;
+        return apiResponse(200, 'getPoolOriginationFee successful', { originationFee: serializedResult });
+    } catch (err) {
+        return errorResponse(500, 'Error getPoolOriginationFeeCtrl');
+    }
+}
+
+export async function getPoolLoanAmountController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const contractAddress = url.searchParams.get("contract");
+
+        if (!contractAddress) {
+            return errorResponse(400, 'contractAddress is required');
+        }
+
+        const result = await readMagnifyV3Contract(env, contractAddress, 'loanAmount');
+        const serializedResult = serializeBigInt(result) / 10 ** 6;
+        return apiResponse(200, 'getPoolLoanAmount successful', { loanAmount: serializedResult });
+    } catch (err) {
+        return errorResponse(500, 'Error getPoolLoanAmountCtrl');
+    }
+}
+
 export async function triggerProcessDefaultPoolController(env: Env) {
     try {
         const poolAddresses = await readSoulboundContract(env, 'getMagnifyPools');
