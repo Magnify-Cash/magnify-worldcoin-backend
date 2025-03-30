@@ -5,7 +5,7 @@ import { getEthBalance, getUSDCBalance, getTokenMetadata, getWalletTokenPortfoli
 import { serializeBigInt } from "../utils/contract.utils";
 import { convertHexToInteger } from "../utils/hashUtils";
 import { ethers } from "ethers";
-import { WORLDCHAIN_RPC_URL } from "../config/constant";
+import { WORLDCHAIN_RPC_URL, WORLDCHAIN_RPC_URL_V2, WORLDCHAIN_RPC_URL_V3 } from "../config/constant";
 import { rpcBatchCall } from "../utils/contract.utils";
 
 // query params of the pool
@@ -20,6 +20,10 @@ const TOKEN_ADDRESS_MAP: Record<string, typeof TOKEN_METADATA[keyof typeof TOKEN
 
 // Set of addresses we care about for fast lookup
 const TRACKED_ADDRESSES = new Set(Object.keys(TOKEN_ADDRESS_MAP));
+
+// Add the RPC_URLs array and sleep function, similar to v3.helper.ts
+const RPC_URLS = [WORLDCHAIN_RPC_URL, WORLDCHAIN_RPC_URL_V2, WORLDCHAIN_RPC_URL_V3];
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export async function getSoulboundDataController(request: Request, env: Env) {
     try {
@@ -511,30 +515,65 @@ export async function getPoolStatusController(request: Request, env: Env) {
             return errorResponse(400, 'contractAddress is required');
         }
 
-        const [isWarmupHex, isActiveHex, isCooldownHex, isExpiredHex] = await Promise.all([
-            rpcBatchCall(WORLDCHAIN_RPC_URL, "eth_call", [
-                { to: contractAddress, data: new ethers.Interface(["function isWarmup() public view returns (bool)"]).encodeFunctionData("isWarmup", []) },
-                "latest",
-            ]),
-            rpcBatchCall(WORLDCHAIN_RPC_URL, "eth_call", [
-                { to: contractAddress, data: new ethers.Interface(["function isActive() public view returns (bool)"]).encodeFunctionData("isActive", []) },
-                "latest",
-            ]),
-            rpcBatchCall(WORLDCHAIN_RPC_URL, "eth_call", [
-                { to: contractAddress, data: new ethers.Interface(["function isCooldown() public view returns (bool)"]).encodeFunctionData("isCooldown", []) },
-                "latest",
-            ]),
-            rpcBatchCall(WORLDCHAIN_RPC_URL, "eth_call", [
-                { to: contractAddress, data: new ethers.Interface(["function isExpired() public view returns (bool)"]).encodeFunctionData("isExpired", []) },
-                "latest",
-            ]),
-        ]);
+        // Define the functions to check
+        const functions = [
+            { name: "isWarmup", interface: new ethers.Interface(["function isWarmup() public view returns (bool)"]) },
+            { name: "isActive", interface: new ethers.Interface(["function isActive() public view returns (bool)"]) },
+            { name: "isCooldown", interface: new ethers.Interface(["function isCooldown() public view returns (bool)"]) },
+            { name: "isExpired", interface: new ethers.Interface(["function isExpired() public view returns (bool)"]) }
+        ];
 
+        let results = null;
+        
+        // Try each RPC URL with retry logic
+        for (let rpcUrlIndex = 0; rpcUrlIndex < RPC_URLS.length; rpcUrlIndex++) {
+            let maxRetries = 3;
+            let retryCount = 0;
+            
+            while (retryCount < maxRetries) {
+                try {
+                    // Execute batch call with current RPC URL
+                    const batchPromises = functions.map(func => 
+                        rpcBatchCall(RPC_URLS[rpcUrlIndex], "eth_call", [
+                            { to: contractAddress, data: func.interface.encodeFunctionData(func.name, []) },
+                            "latest",
+                        ])
+                    );
+                    
+                    results = await Promise.all(batchPromises);
+                    // If successful, break out of the retry loop
+                    break;
+                } catch (err) {
+                    retryCount++;
+                    const backoffMs = 1000 * Math.pow(2, retryCount);
+                    console.log(`RPC request failed for getPoolStatus using RPC URL #${rpcUrlIndex + 1}, retrying in ${backoffMs}ms (${retryCount}/${maxRetries})`);
+                    await sleep(backoffMs);
+                }
+            }
+            
+            // If we got results, break out of the RPC URL loop
+            if (results !== null) {
+                break;
+            }
+            
+            if (rpcUrlIndex < RPC_URLS.length - 1) {
+                console.log(`Failed with RPC URL #${rpcUrlIndex + 1} for getPoolStatus, switching to next fallback URL`);
+            }
+        }
+        
+        // If we didn't get results after trying all URLs, throw an error
+        if (results === null) {
+            console.error(`Failed to get pool status after trying all ${RPC_URLS.length} RPC URLs`);
+            throw new Error(`Could not retrieve pool status from any RPC endpoint after multiple attempts`);
+        }
+        
         // Parse hex string boolean values to actual booleans
         // '0x0000...0001' is true, '0x0000...0000' is false
         const parseHexBoolean = (hexValue: string): boolean => 
             hexValue === '0x0000000000000000000000000000000000000000000000000000000000000001';
 
+        const [isWarmupHex, isActiveHex, isCooldownHex, isExpiredHex] = results;
+        
         const status = {
             isWarmup: parseHexBoolean(isWarmupHex),
             isActive: parseHexBoolean(isActiveHex),
