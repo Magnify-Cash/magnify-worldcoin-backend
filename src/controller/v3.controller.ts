@@ -279,9 +279,9 @@ export async function previewMintController(request: Request, env: Env) {
         if (!contractAddress) {
             return errorResponse(400, 'contractAddress is required');
         }
-
-        const result = await readMagnifyV3Contract(env, contractAddress, 'previewMint', shares);
-        const serializedResult = serializeBigInt(result);
+        const sharesParam = (Number(shares) * 10 ** 6);
+        const result = await readMagnifyV3Contract(env, contractAddress, 'previewMint', sharesParam);
+        const serializedResult = serializeBigInt(result) / 10 ** 6;
         return apiResponse(200, 'previewMint successful', { lpAmount: serializedResult });
     } catch (err) {
         return errorResponse(500, 'Error previewMint');
@@ -299,8 +299,10 @@ export async function previewDepositController(request: Request, env: Env) {
             return errorResponse(400, 'contractAddress is required');
         }
 
-        const result = await readMagnifyV3Contract(env, contractAddress, 'previewDeposit', assets);
-        const serializedResult = serializeBigInt(result);
+        const assetsParam = (Number(assets) * 10 ** 6);
+
+        const result = await readMagnifyV3Contract(env, contractAddress, 'previewDeposit', assetsParam);
+        const serializedResult = serializeBigInt(result) / 10 ** 6;
         return apiResponse(200, 'previewDeposit successful', { lpAmount: serializedResult });
     } catch (err) {
         return errorResponse(500, 'Error previewDepositCtrl');
@@ -317,8 +319,10 @@ export async function previewWithdrawController(request: Request, env: Env) {
             return errorResponse(400, 'contractAddress is required');
         }
 
-        const result = await readMagnifyV3Contract(env, contractAddress, 'previewWithdraw', assets);
-        const serializedResult = serializeBigInt(result);
+        const assetsParam = (Number(assets) * 10 ** 6);
+
+        const result = await readMagnifyV3Contract(env, contractAddress, 'previewWithdraw', assetsParam);
+        const serializedResult = serializeBigInt(result) / 10 ** 6;
         return apiResponse(200, 'previewWithdraw successful', { lpAmount: serializedResult });
     } catch (err) {
         return errorResponse(500, 'Error previewWithdrawCtrl');
@@ -334,9 +338,10 @@ export async function previewRedeemController(request: Request, env: Env) {
         if (!contractAddress) {
             return errorResponse(400, 'contractAddress is required');
         }
+        const sharesParam = (Number(shares) * 10 ** 6);
 
-        const result = await readMagnifyV3Contract(env, contractAddress, 'previewRedeem', shares);
-        const serializedResult = serializeBigInt(result);
+        const result = await readMagnifyV3Contract(env, contractAddress, 'previewRedeem', sharesParam);
+        const serializedResult = serializeBigInt(result) / 10 ** 6;
         return apiResponse(200, 'previewRedeem successful', { usdcAmount: serializedResult });
     } catch (err) {
         return errorResponse(500, 'Error previewRedeemCtrl');
