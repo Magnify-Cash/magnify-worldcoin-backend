@@ -8,7 +8,7 @@ import {ethers} from 'ethers';
 
 export async function getEthBalance(walletAddress: string, env: Env) {
     try {
-        const client = await initPublicClient(env);
+        const client = await initPublicClient(env, WORLDCHAIN_RPC_URL);
         const balance = await client.getBalance({
             address: walletAddress as `0x${string}`
         })
@@ -20,7 +20,7 @@ export async function getEthBalance(walletAddress: string, env: Env) {
 
 export async function getUSDCBalance(walletAddress: string, env: Env) {
     try {
-        const client = await initPublicClient(env);
+        const client = await initPublicClient(env, WORLDCHAIN_RPC_URL);
         const balance = await client.readContract({
             address: USDC_ADDRESS as `0x${string}`,
             abi: USDCAbi,

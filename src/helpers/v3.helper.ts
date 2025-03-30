@@ -93,3 +93,9 @@ export async function readMagnifyV3Contract(env: Env, contractAddress: string, v
     throw new Error(`Could not retrieve ${viewFunctionName} from any RPC endpoint after multiple attempts`);
 }
 
+export async function getBlockTimestamp(env: Env, blockNumber: number) {
+    const client = await initPublicClient(env, WORLDCHAIN_RPC_URL);
+    const block = await client.getBlock({ blockNumber: BigInt(blockNumber) });
+    return block.timestamp;
+}
+
