@@ -28,7 +28,7 @@ export async function readSoulboundContract(env: Env, viewFunctionName: string, 
                         functionName: viewFunctionName
                     };
                     if (params !== undefined) {
-                        if (params.startsWith('0x')) {
+                        if (typeof params === 'string' && params.startsWith('0x')) {
                             argument.args = [params as `0x${string}`];
                         } else {
                             argument.args = [BigInt(params)];
@@ -70,7 +70,7 @@ export async function readMagnifyV3Contract(env: Env, contractAddress: string, v
                 };
 
                 if (params !== undefined) {
-                    if (params.startsWith('0x')) {
+                    if (typeof params === 'string' && params.startsWith('0x')) {
                         argument.args = [params as `0x${string}`];
                     } else {
                         argument.args = [BigInt(params)];
@@ -79,6 +79,7 @@ export async function readMagnifyV3Contract(env: Env, contractAddress: string, v
                 const data = await client.readContract(argument);
                 return data;
             } catch (err) {
+                console.log('err: ', err);
                 retryCount++;
                 const backoffMs = 1000 * Math.pow(2, retryCount);
                 console.log(`RPC request failed for ${viewFunctionName} using RPC URL #${rpcUrlIndex + 1}, retrying in ${backoffMs}ms (${retryCount}/${maxRetries})`);
