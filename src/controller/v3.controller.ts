@@ -301,7 +301,7 @@ export async function previewDepositController(request: Request, env: Env) {
 
         const result = await readMagnifyV3Contract(env, contractAddress, 'previewDeposit', assets);
         const serializedResult = serializeBigInt(result);
-        return apiResponse(200, 'previewDeposit successful', { usdcAmount: serializedResult });
+        return apiResponse(200, 'previewDeposit successful', { lpAmount: serializedResult });
     } catch (err) {
         return errorResponse(500, 'Error previewDepositCtrl');
     }
@@ -774,6 +774,25 @@ export async function getPoolWarmupDurationTestnetController(request: Request, e
     } catch (err) {
         console.log(err);
         return errorResponse(500, 'Error calculating pool warmup duration');
+    }
+}
+
+export async function getPoolUserLPBalanceController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const contractAddress = url.searchParams.get("contract");
+        const walletAddress = url.searchParams.get("wallet");
+
+        if (!contractAddress || !walletAddress) {
+            return errorResponse(400, 'contractAddress and walletAddress are required');
+        }
+
+        const result = await readMagnifyV3Contract(env, contractAddress, 'balanceOf', walletAddress);
+        const serializedResult = serializeBigInt(result) / 10 ** 6;
+        return apiResponse(200, 'getPoolUserLPBalance successful', { balance: serializedResult });
+        
+    } catch (err) {
+        return errorResponse(500, 'Error getPoolUserLPBalanceCtrl');
     }
 }
 

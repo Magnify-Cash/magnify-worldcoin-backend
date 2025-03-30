@@ -33,7 +33,8 @@ import { getSoulboundDataController,
 	getPoolOriginationFeeController,
 	getPoolLoanAmountController,
 	getPoolWarmupDurationTestnetController,
-	triggerProcessDefaultPoolController
+	triggerProcessDefaultPoolController,
+	getPoolUserLPBalanceController
  } from './controller/v3.controller';
 import { getEthBalanceController, getUSDCBalanceController, getTokenMetadataController, getWalletTokenPortfolioController } from './controller/v3.controller';
 
@@ -146,6 +147,8 @@ export default {
 				return getPoolLiquidityController(request, env);
 			case '/v3/user/max/data':
 				return getUserMaxPoolDataController(request, env);
+			case '/v3/user/lp/balance':
+				return getPoolUserLPBalanceController(request, env);
 			default:
 				return errorResponse(404, 'Not Found');
 		}
