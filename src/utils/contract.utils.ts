@@ -83,10 +83,10 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
     }
 }
 
-export async function initPublicClient(env: Env) {
+export async function initPublicClient(env: Env, rpcUrl: string) {
         const client = createPublicClient({
             chain: worldchainSepolia,
-            transport: http(WORLDCHAIN_RPC_URL),
+            transport: http(rpcUrl),
         });
         return client;
 } 
