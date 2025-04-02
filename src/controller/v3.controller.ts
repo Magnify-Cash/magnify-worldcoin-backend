@@ -1,5 +1,5 @@
 import { Env } from "../config/interface";
-import { readMagnifyV3Contract, readSoulboundContract } from "../helpers/v3.helper";
+import { formatDate, readMagnifyV3Contract, readSoulboundContract } from "../helpers/v3.helper";
 import { apiResponse, errorResponse } from "../utils/apiResponse.utils"
 import { getEthBalance, getUSDCBalance, getTokenMetadata, getWalletTokenPortfolio } from "../helpers/token.helper";
 import { serializeBigInt } from "../utils/contract.utils";
@@ -879,3 +879,57 @@ export const handleDailyLpTokenPriceJob = async (env: Env) => {
         if (connection) await closeConnection(connection);
     }
 };
+
+export async function getLpTokenHistoryController(request: Request, env: Env) {
+    const url = new URL(request.url);
+    const contract = url.searchParams.get("contract");
+
+    if (!contract) {
+        return errorResponse(400, "contract is required");
+    }
+
+    let connection = null;
+    try {
+        connection = await getConnection(env);
+        const contractLower = contract.toLowerCase();
+
+        const [poolRow] = await connection.query<{ id: number }>(
+            `SELECT id FROM pool_addresses WHERE address = ? LIMIT 1`,
+            {
+                replacements: [contractLower],
+                type: QueryTypes.SELECT
+            }
+        );
+
+        if (!poolRow?.id) {
+            return errorResponse(404, "Pool address not found in database");
+        }
+
+        const history = await connection.query<{
+            token_price: number;
+            timestamp: string;
+        }>(
+            `SELECT token_price, timestamp
+             FROM pool_lp_tokens
+             WHERE pool_id = ?
+             ORDER BY timestamp DESC`,
+            {
+                replacements: [poolRow.id],
+                type: QueryTypes.SELECT
+            }
+        );
+
+        const formattedHistory = history.map(entry => ({
+            token_price: parseFloat(entry.token_price as unknown as string),
+            timestamp: entry.timestamp,
+            date: formatDate(entry.timestamp)
+        }));
+        
+        return apiResponse(200, "LP token price history fetched", formattedHistory);
+    } catch (err) {
+        console.error("Error in getLpTokenHistoryController:", err);
+        return errorResponse(500, "Failed to fetch LP token price history");
+    } finally {
+        if (connection) await closeConnection(connection);
+    }
+}
