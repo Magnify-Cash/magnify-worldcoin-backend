@@ -34,7 +34,8 @@ import { getSoulboundDataController,
 	getPoolLoanAmountController,
 	getPoolWarmupDurationTestnetController,
 	triggerProcessDefaultPoolController,
-	getPoolUserLPBalanceController
+	getPoolUserLPBalanceController,
+	handleDailyLpTokenPriceJob
  } from './controller/v3.controller';
 import { getEthBalanceController, getUSDCBalanceController, getTokenMetadataController, getWalletTokenPortfolioController } from './controller/v3.controller';
 
@@ -149,12 +150,15 @@ export default {
 				return getUserMaxPoolDataController(request, env);
 			case '/v3/user/lp/balance':
 				return getPoolUserLPBalanceController(request, env);
+			case '/v3/pool/getPrice':
+				return handleDailyLpTokenPriceJob(env);
 			default:
 				return errorResponse(404, 'Not Found');
 		}
 	},
 	async scheduled(controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
 		console.log('Scheduled task executed');
+		await handleDailyLpTokenPriceJob(env);
 		await triggerProcessDefaultPoolController(env);
 	}
 } satisfies ExportedHandler<Env>;

@@ -10,6 +10,8 @@ import { rpcBatchCall } from "../utils/contract.utils";
 import { getBlockTimestamp } from "../helpers/v3.helper";
 // query params of the pool
 import { TOKEN_METADATA } from "../config/constant";
+import { getConnection, closeConnection } from '../database/init'; 
+import { QueryTypes } from "sequelize";
 
 // Create a map of contract addresses to metadata for efficient lookup - moved outside function for better performance
 const TOKEN_ADDRESS_MAP: Record<string, typeof TOKEN_METADATA[keyof typeof TOKEN_METADATA]> = {
@@ -810,3 +812,70 @@ export async function triggerProcessDefaultPoolController(env: Env) {
     }
 }
 
+export const handleDailyLpTokenPriceJob = async (env: Env) => {
+    const poolAddresses = await readSoulboundContract(env, 'getMagnifyPools');
+    if (!Array.isArray(poolAddresses) || !poolAddresses.every(addr => typeof addr === 'string')) {
+        throw new Error('Invalid response: Expected an array of strings');
+    }
+
+    let connection = null;
+    const results: { poolAddress: string; price: number }[] = [];
+
+    try {
+        connection = await getConnection(env);
+
+        for (const address of poolAddresses) {
+            const addressLower = address.toLowerCase();
+
+            // Insert if not exists
+            await connection.query(
+                `INSERT INTO pool_addresses (address)
+                 VALUES (?)
+                 ON CONFLICT (address) DO NOTHING;`,
+                {
+                    replacements: [addressLower],
+                    type: QueryTypes.INSERT
+                }
+            );            
+
+            // Get pool ID
+            const [result] = await connection.query<{ id: number }>(
+                `SELECT id FROM pool_addresses WHERE address = ? LIMIT 1;`,
+                {
+                    replacements: [addressLower],
+                    type: QueryTypes.SELECT
+                }
+            );
+
+            if (!result?.id) {
+                console.warn(`Could not fetch ID for address: ${addressLower}`);
+                continue;
+            }
+
+            // Get LP price
+            const raw = await readMagnifyV3Contract(env, addressLower, 'previewRedeem', 1_000_000);
+            const price = serializeBigInt(raw) / 1_000_000;
+
+            // Insert price
+            const timestamp = Math.floor(Date.now() / 1000);
+            await connection.query(
+                `INSERT INTO pool_lp_tokens (pool_id, token_price, timestamp)
+                 VALUES (?, ?, ?)`,
+                {
+                    replacements: [result.id, price, timestamp],
+                    type: QueryTypes.INSERT
+                }
+            );
+
+            results.push({ poolAddress: addressLower, price });
+            console.log(`Saved LP price for ${addressLower}: ${price}`);
+        }
+
+        return apiResponse(200, 'LP token prices updated', results);
+    } catch (err) {
+        console.error("handleDailyLpTokenPriceJob cron failed:", err);
+        return errorResponse(500, 'Error handleDailyLpTokenPriceJob');
+    } finally {
+        if (connection) await closeConnection(connection);
+    }
+};
