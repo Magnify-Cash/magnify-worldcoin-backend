@@ -16,7 +16,7 @@ export const WORLDSCAN_PATH = {
 }
 //https://icy-greatest-dream.worldchain-mainnet.quiknode.pro/f465b27e9a8dbd90d16bfb3bca7b2193bc1dcfa8/
 //https://worldchain-sepolia.gateway.tenderly.co
-export const WORLDCHAIN_RPC_URL = "https://icy-greatest-dream.worldchain-mainnet.quiknode.pro/f465b27e9a8dbd90d16bfb3bca7b2193bc1dcfa8/"//"https://chaotic-fabled-water.worldchain-sepolia.quiknode.pro/3f033f9e1b6829b9b352bed07914e122c10ec1d4/"//"https://icy-greatest-dream.worldchain-mainnet.quiknode.pro/f465b27e9a8dbd90d16bfb3bca7b2193bc1dcfa8/"
+export const WORLDCHAIN_RPC_URL = "https://worldchain-mainnet.g.alchemy.com/v2/Cj_65mRSyh2uxEc9RCI6JhMQSOVwz56m"//"https://chaotic-fabled-water.worldchain-sepolia.quiknode.pro/3f033f9e1b6829b9b352bed07914e122c10ec1d4/"//"https://icy-greatest-dream.worldchain-mainnet.quiknode.pro/f465b27e9a8dbd90d16bfb3bca7b2193bc1dcfa8/"
 export const WORLDCHAIN_RPC_URL_V2 = "https://chaotic-fabled-water.worldchain-sepolia.quiknode.pro/3f033f9e1b6829b9b352bed07914e122c10ec1d4/"
 export const WORLDCHAIN_RPC_URL_V3 = "https://worldchain-sepolia.g.alchemy.com/v2/Cj_65mRSyh2uxEc9RCI6JhMQSOVwz56m"
 export const WORLDCHAIN_ALCHEMY_RPC_URL = "https://worldchain-mainnet.g.alchemy.com/v2/Cj_65mRSyh2uxEc9RCI6JhMQSOVwz56m"
