@@ -756,11 +756,13 @@ export async function getPoolWarmupDurationTestnetController(request: Request, e
             return errorResponse(400, 'contractAddress is required');
         }
 
+        const normalizedAddress = contractAddress.toLowerCase();
+
         let deployedBlockNumber;
-        if (contractAddress === '0x6892f50c8a2ff41c8fd58c2405b0fb29ff77aa1c') {
-            deployedBlockNumber = 11214391;
-        } else if (contractAddress === '0x0ab2554e4c8d4d7c75c4fe6314a4ef62be800530') {
-            deployedBlockNumber = 11388448;
+        if (normalizedAddress === '0x75e0b3e2c5de6abeb77c3e0e143d8e6158daf4d5') {
+            deployedBlockNumber = 12219770;
+        } else if (normalizedAddress === '0x6d92a3aaadf838ed13cb8697eb9d35fcf6c4dba9') {
+            deployedBlockNumber = 12219854;
         } else {
             return errorResponse(400, 'Unknown contract address, no deployment block number found');
         }
@@ -768,7 +770,7 @@ export async function getPoolWarmupDurationTestnetController(request: Request, e
         const deployedBlockTimestamp = await getBlockTimestamp(env, deployedBlockNumber);
         const startTimestampResult = await readMagnifyV3Contract(env, contractAddress, 'startTimestamp');
         const startTimestamp = Number(serializeBigInt(startTimestampResult));
-        
+
         // Calculate warmup period in seconds (ensure both are the same type)
         const warmupPeriodSeconds = startTimestamp - Number(deployedBlockTimestamp);
         // Convert to days (86400 seconds in a day)
@@ -776,7 +778,8 @@ export async function getPoolWarmupDurationTestnetController(request: Request, e
 
         const result = {
             warmupPeriodDays: parseFloat(warmupPeriodDays.toFixed(2))
-        }
+        };
+
         return apiResponse(200, 'Warmup period calculated successfully', serializeBigInt(result));
     } catch (err) {
         console.log(err);
