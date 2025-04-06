@@ -1,8 +1,9 @@
-import { initPublicClient } from "../utils/contract.utils";
+import { initPublicClient, serializeBigInt } from "../utils/contract.utils";
 import { Env } from "../config/interface";
 import MagnifySoulboundAbi from "../config/contracts/MagnifySoulbound.json";
 import MagnifyV3Abi from "../config/contracts/MagnifyV3.json";
-import { WORLDCHAIN_RPC_URL, WORLDCHAIN_RPC_URL_V2, WORLDCHAIN_RPC_URL_V3 } from "../config/constant";
+import { WORLDCHAIN_RPC_URL, WORLDCHAIN_RPC_URL_V2, WORLDCHAIN_RPC_URL_V3, ETHERSCAN_API_KEY } from "../config/constant";
+import axios from "axios";
 
 
 const RPC_URLS = [WORLDCHAIN_RPC_URL, WORLDCHAIN_RPC_URL_V2, WORLDCHAIN_RPC_URL_V3];
@@ -106,4 +107,13 @@ export function formatDate(timestamp: string): string {
     const dd = String(date.getDate()).padStart(2, '0');
     const yy = String(date.getFullYear()).slice(-2);
     return `${mm}/${dd}/${yy}`;
+}
+
+export async function getPoolCreationTx(env: Env, contractAddress: string) {
+    try {
+        const result = await axios.get(`https://api.worldscan.org/api?module=contract&action=getcontractcreation&contractaddresses=${contractAddress}&apikey=${ETHERSCAN_API_KEY}`)
+        return serializeBigInt(result.data.result[0].blockNumber);
+    } catch (err) {
+        throw new Error(`Error getPoolCreationTx: ${contractAddress}`);
+    }
 }

@@ -1,5 +1,5 @@
 import { Env } from "../config/interface";
-import { formatDate, readMagnifyV3Contract, readSoulboundContract } from "../helpers/v3.helper";
+import { formatDate, getPoolCreationTx, readMagnifyV3Contract, readSoulboundContract } from "../helpers/v3.helper";
 import { apiResponse, errorResponse } from "../utils/apiResponse.utils"
 import { getEthBalance, getUSDCBalance, getTokenMetadata, getWalletTokenPortfolio } from "../helpers/token.helper";
 import { serializeBigInt } from "../utils/contract.utils";
@@ -747,7 +747,7 @@ export async function getPoolLoanAmountController(request: Request, env: Env) {
     }
 }
 
-export async function getPoolWarmupDurationTestnetController(request: Request, env: Env) {
+export async function getPoolWarmupDurationController(request: Request, env: Env) {
     try {
         const url = new URL(request.url);
         const contractAddress = url.searchParams.get("contract");
@@ -759,13 +759,15 @@ export async function getPoolWarmupDurationTestnetController(request: Request, e
         const normalizedAddress = contractAddress.toLowerCase();
 
         let deployedBlockNumber;
-        if (normalizedAddress === '0x75e0b3e2c5de6abeb77c3e0e143d8e6158daf4d5') {
-            deployedBlockNumber = 12219770;
-        } else if (normalizedAddress === '0x6d92a3aaadf838ed13cb8697eb9d35fcf6c4dba9') {
-            deployedBlockNumber = 12219854;
-        } else {
-            return errorResponse(400, 'Unknown contract address, no deployment block number found');
-        }
+        // if (normalizedAddress === '0x75e0b3e2c5de6abeb77c3e0e143d8e6158daf4d5') {
+        //     deployedBlockNumber = 12219770;
+        // } else if (normalizedAddress === '0x6d92a3aaadf838ed13cb8697eb9d35fcf6c4dba9') {
+        //     deployedBlockNumber = 12219854;
+        // } else {
+        //     return errorResponse(400, 'Unknown contract address, no deployment block number found');
+        // }
+
+        deployedBlockNumber = await getPoolCreationTx(env, normalizedAddress);
 
         const deployedBlockTimestamp = await getBlockTimestamp(env, deployedBlockNumber);
         const startTimestampResult = await readMagnifyV3Contract(env, contractAddress, 'startTimestamp');
