@@ -32,11 +32,11 @@ import { getSoulboundDataController,
 	getPoolNameController,
 	getPoolOriginationFeeController,
 	getPoolLoanAmountController,
-	getPoolWarmupDurationTestnetController,
 	triggerProcessDefaultPoolController,
 	getPoolUserLPBalanceController,
 	handleDailyLpTokenPriceJob,
-	getLpTokenHistoryController
+	getLpTokenHistoryController,
+	getPoolWarmupDurationController
  } from './controller/v3.controller';
 import { getEthBalanceController, getUSDCBalanceController, getTokenMetadataController, getWalletTokenPortfolioController } from './controller/v3.controller';
 
@@ -124,7 +124,7 @@ export default {
 			case '/v3/pool/deactivation':
 				return getPoolEndTimestampController(request, env);
 			case '/v3/pool/warmup':
-				return getPoolWarmupDurationTestnetController(request, env);
+				return getPoolWarmupDurationController(request, env);
 			case '/v3/pool/symbol':
 				return getPoolLpSymbolController(request, env);
 			case '/v3/pool/tier':

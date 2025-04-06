@@ -43,3 +43,5 @@ export const TOKEN_METADATA = {
 		tokenDecimals: 18,
 	}
 }
+
+export const ETHERSCAN_API_KEY = "WEI3K4JI767C3UB17K6138HMY1J7W1XAGR"
