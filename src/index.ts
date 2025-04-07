@@ -36,7 +36,8 @@ import { getSoulboundDataController,
 	getPoolUserLPBalanceController,
 	handleDailyLpTokenPriceJob,
 	getLpTokenHistoryController,
-	getPoolWarmupDurationController
+	getPoolWarmupDurationController,
+	getUserLendingHistoryController
  } from './controller/v3.controller';
 import { getEthBalanceController, getUSDCBalanceController, getTokenMetadataController, getWalletTokenPortfolioController } from './controller/v3.controller';
 
@@ -155,6 +156,8 @@ export default {
 				return handleDailyLpTokenPriceJob(env);
 			case '/v3/pool/lp/history':
 				return getLpTokenHistoryController(request, env);
+			case '/v3/user/lending/history':
+				return getUserLendingHistoryController(request, env);
 			default:
 				return errorResponse(404, 'Not Found');
 		}

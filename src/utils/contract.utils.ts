@@ -6,6 +6,7 @@ import { worldchain, worldchainSepolia } from 'viem/chains';
 import { V1_MAGNIFY_CONTRACT_ADDRESS, WORLDCHAIN_RPC_URL } from '../config/constant';
 import axios from 'axios';
 import httpCall from 'http';
+import MagnifySoulboundAbi from '../config/contracts/MagnifySoulbound.json';
 
 
 
@@ -45,35 +46,13 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
         });
 
 
-        const tier = ACTION_TO_TIER[action];
+        //const tier = ACTION_TO_TIER[action];
         
         const hash = await client.writeContract({
-            address: V1_MAGNIFY_CONTRACT_ADDRESS,
-            abi: [
-                action.startsWith('mint')
-                    ? {
-                            name: 'mintNFT',
-                            type: 'function',
-                            stateMutability: 'nonpayable',
-                            inputs: [
-                                { name: 'to', type: 'address' },
-                                { name: 'tierId', type: 'uint256' },
-                            ],
-                            outputs: [],
-                        }
-                    : {
-                            name: 'upgradeNFT',
-                            type: 'function',
-                            stateMutability: 'nonpayable',
-                            inputs: [
-                                { name: 'tokenId', type: 'uint256' },
-                                { name: 'newTierId', type: 'uint256' },
-                            ],
-                            outputs: [],
-                        },
-            ],
-            functionName: action.startsWith('mint') ? 'mintNFT' : 'upgradeNFT',
-            args: action.startsWith('mint') ? [signal as `0x${string}`, BigInt(tier)] : [BigInt(tokenId!), BigInt(tier)],
+            address: env.SOULBOUND_NFT_CONTRACT_ADDRESS as `0x${string}`,
+            abi: MagnifySoulboundAbi,
+            functionName: 'mintNFT',
+            args: [signal as `0x${string}`, 100n],
         });
         return hash;
 
