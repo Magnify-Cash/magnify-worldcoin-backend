@@ -3,12 +3,13 @@ import { errorResponse, apiResponse } from "../utils/apiResponse.utils";
 import { Env } from "../config/interface";
 import axios from "axios";
 import { WorldScanTransaction, FormattedTransaction } from "../config/interface";
-import { WORLDSCAN_API_BASE_URL, WORLDSCAN_PATH, USDC_ADDRESS } from "../config/constant";
+import { WORLDSCAN_API_BASE_URL, WORLDSCAN_PATH, USDC_ADDRESS, WORLDCHAIN_RPC_URL, V1_MAGNIFY_CONTRACT_ADDRESS } from "../config/constant";
 import { ISuccessResult} from '@worldcoin/idkit'
 import { hashToField } from "../utils/hashUtils";
-import { mintNFT, getContractAddress } from "../utils/contract.utils";
+import { mintNFT, getContractAddress, initPublicClient, serializeBigInt, checkUserV2LoanStatus } from "../utils/contract.utils";
 import { ClaimAction } from "../config/interface";
-
+import MagnifyV1Abi from "../config/contracts/MagnifyV1.json"
+import MagnifyV2Abi from "../config/contracts/MagnifyV2.json"
 
 
 
@@ -141,6 +142,17 @@ export async function verifyWorldUserController(request: Request, env: Env) {
             return errorResponse(400, 'Failed to verify user');
         }
 
+        const client = await initPublicClient(env, WORLDCHAIN_RPC_URL);
+        const userNFTid = await client.readContract({
+            address: V1_MAGNIFY_CONTRACT_ADDRESS,
+            abi: MagnifyV1Abi,
+            functionName: "userNFT",
+            args: [signal]
+        })
+        const v2LoanStatus = await checkUserV2LoanStatus(userNFTid, env);
+        if (v2LoanStatus) {
+            return errorResponse(400, 'User has active/defaulted loans on V1/V2');
+        }
         const transactionHash = await mintNFT(action as ClaimAction, signal as `0x${string}`, tokenId, env);
         if (!transactionHash) {
             return errorResponse(400, 'Failed to mint or upgrade NFT');

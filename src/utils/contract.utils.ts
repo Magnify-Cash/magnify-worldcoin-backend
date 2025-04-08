@@ -7,7 +7,8 @@ import { V1_MAGNIFY_CONTRACT_ADDRESS, WORLDCHAIN_RPC_URL } from '../config/const
 import axios from 'axios';
 import httpCall from 'http';
 import MagnifySoulboundAbi from '../config/contracts/MagnifySoulbound.json';
-
+import MagnifyV2Abi from '../config/contracts/MagnifyV2.json';
+import MagnifyV1Abi from '../config/contracts/MagnifyV1.json';
 
 
 export async function getContractAddress(env: Env) {
@@ -45,7 +46,7 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
             transport: http('https://worldchain-mainnet.g.alchemy.com/public'),
         });
 
-
+       
         //const tier = ACTION_TO_TIER[action];
         
         const hash = await client.writeContract({
@@ -60,6 +61,40 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
         console.error(err);    
         return null;
     }
+}
+
+export async function checkUserV2LoanStatus(userNFTid: any, env: Env) {
+    const client = await initPublicClient(env, WORLDCHAIN_RPC_URL);
+    const loanV2Status = await client.readContract({
+        address: env.V2_MAGNIFY_CONTRACT_ADDRESS as `0x${string}`,
+        abi: MagnifyV2Abi,
+        functionName: "loans",
+        args: [userNFTid]
+    })
+    const serializeLoanV2Status = serializeBigInt(loanV2Status);
+    const loanV2StartTime = serializeLoanV2Status[1];
+    const loanV2LoanPeriod = serializeLoanV2Status[4];
+
+    if (loanV2StartTime + loanV2LoanPeriod < Date.now()) {
+        return true;
+    }
+    const loanV1Status = await client.readContract({
+        address: V1_MAGNIFY_CONTRACT_ADDRESS,
+        abi: MagnifyV1Abi,
+        functionName: "loans",
+        args: [userNFTid]
+    })
+    const serializeLoanV1Status = serializeBigInt(loanV1Status);
+    const loanV1StartTime = serializeLoanV1Status[1];
+    const loanV1LoanPeriod = serializeLoanV1Status[4];
+
+    if (loanV1StartTime + loanV1LoanPeriod < Date.now()) {
+        return true;
+    }
+    if (serializeLoanV2Status[2] === true || serializeLoanV1Status[2] === true) {
+        return true;
+    } 
+    return false;
 }
 
 export async function initPublicClient(env: Env, rpcUrl: string) {

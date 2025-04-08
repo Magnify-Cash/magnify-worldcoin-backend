@@ -986,13 +986,11 @@ export async function getUserLendingHistoryController(request: Request, env: Env
             let allEvents: any[] = [];
             let currentFromBlock = fromBlock;
             
-            // Calculate optimal block range based on total range
-            const totalRange = toBlock - fromBlock;
-            const optimalRange = totalRange > 100000n ? 50000n : 10000n;
-            let blockRange = optimalRange;
+            // Use a smaller block range to stay well within limits
+            const BLOCK_RANGE_LIMIT = 5000n; // Use 5000 blocks to be safe
             
             while (currentFromBlock < toBlock) {
-                const currentToBlock = currentFromBlock + blockRange > toBlock ? toBlock : currentFromBlock + blockRange;
+                const currentToBlock = currentFromBlock + BLOCK_RANGE_LIMIT > toBlock ? toBlock : currentFromBlock + BLOCK_RANGE_LIMIT;
                 
                 try {
                     const events = await initClient.getContractEvents({
@@ -1022,13 +1020,41 @@ export async function getUserLendingHistoryController(request: Request, env: Env
                     }
                     
                     currentFromBlock = currentToBlock + 1n;
-                } catch (error) {
+                } catch (error: any) {
                     console.error(`Error fetching events for blocks ${currentFromBlock} to ${currentToBlock}:`, error);
-                    if (currentToBlock - currentFromBlock > 1000n) {
-                        blockRange = blockRange / 2n;
-                        continue;
+                    
+                    // If we hit the block range limit error, try with a smaller range
+                    if (error.message?.includes('eth_getLogs is limited to a 10,000 range')) {
+                        const smallerRange = BLOCK_RANGE_LIMIT / 2n;
+                        if (smallerRange < 1000n) {
+                            throw new Error('Block range too small to continue');
+                        }
+                        // Retry with smaller range
+                        const newToBlock = currentFromBlock + smallerRange;
+                        const events = await initClient.getContractEvents({
+                            address: address as `0x${string}`,
+                            abi: MagnifyV3Abi,
+                            eventName,
+                            args,
+                            fromBlock: currentFromBlock,
+                            toBlock: newToBlock
+                        });
+                        
+                        if (events.length > 0) {
+                            const uniqueBlockNumbers = [...new Set(events.map(event => event.blockNumber))];
+                            await fetchBlockTimestamps(uniqueBlockNumbers);
+                            const eventsWithTimestamps = events.map(event => ({
+                                eventName: (event as any).eventName,
+                                args: (event as any).args,
+                                timestamp: blockTimestampCache.get(event.blockNumber)
+                            }));
+                            allEvents = [...allEvents, ...eventsWithTimestamps];
+                        }
+                        
+                        currentFromBlock = newToBlock + 1n;
+                    } else {
+                        throw error;
                     }
-                    throw error;
                 }
             }
             
