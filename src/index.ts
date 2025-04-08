@@ -37,7 +37,9 @@ import { getSoulboundDataController,
 	handleDailyLpTokenPriceJob,
 	getLpTokenHistoryController,
 	getPoolWarmupDurationController,
-	getUserLendingHistoryController
+	getUserLendingHistoryController,
+	getPoolEarlyExitFeeController,
+	getPoolDefaultPenaltyController
  } from './controller/v3.controller';
 import { getEthBalanceController, getUSDCBalanceController, getTokenMetadataController, getWalletTokenPortfolioController } from './controller/v3.controller';
 
@@ -136,14 +138,18 @@ export default {
 				return totalSupplyController(request, env);
 			case '/v3/pool/fee/treasury':
 				return getPoolTreasuryFeeController(request, env);
+			case '/v3/pool/fee/origination':
+				return getPoolOriginationFeeController(request, env);
+			case '/v3/pool/fee/exit':
+				return getPoolEarlyExitFeeController(request, env);
+			case '/v3/pool/fee/penalty':
+				return getPoolDefaultPenaltyController(request, env);
 			case '/v3/pool/loan/duration':
 				return getPoolLoanDurationController(request, env);
 			case '/v3/pool/loan/interest':
 				return getPoolLoanInterestRateController(request, env);
 			case '/v3/pool/loan/amount':
 				return getPoolLoanAmountController(request, env);
-			case '/v3/pool/fee/origination':
-				return getPoolOriginationFeeController(request, env);
 			case '/v3/pool/status':
 				return getPoolStatusController(request, env);
 			case '/v3/pool/liquidity':
