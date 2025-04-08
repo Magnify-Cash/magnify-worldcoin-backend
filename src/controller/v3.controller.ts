@@ -731,6 +731,40 @@ export async function getPoolOriginationFeeController(request: Request, env: Env
     }
 }
 
+export async function getPoolEarlyExitFeeController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const contractAddress = url.searchParams.get("contract");
+
+        if (!contractAddress) {
+            return errorResponse(400, 'contractAddress is required');
+        }
+
+        const result = await readMagnifyV3Contract(env, contractAddress, 'earlyExitFee');
+        const serializedResult = serializeBigInt(result) / 10 ** 2;
+        return apiResponse(200, 'getPoolEarlyExitFee successful', { earlyExitFee: serializedResult });
+    } catch (err) {
+        return errorResponse(500, 'Error getPoolEarlyExitFeeCtrl');
+    }
+}
+
+export async function getPoolDefaultPenaltyController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const contractAddress = url.searchParams.get("contract");
+
+        if (!contractAddress) {
+            return errorResponse(400, 'contractAddress is required');
+        }
+
+        const result = await readMagnifyV3Contract(env, contractAddress, 'defaultPenalty');
+        const serializedResult = serializeBigInt(result) / 10 ** 2;
+        return apiResponse(200, 'getPoolDefaultPenalty successful', { defaultPenalty: serializedResult });
+    } catch (err) {
+        return errorResponse(500, 'Error getPoolDefaultPenaltyCtrl');
+    }
+}
+
 export async function getPoolLoanAmountController(request: Request, env: Env) {
     try {
         const url = new URL(request.url);
