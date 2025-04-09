@@ -282,7 +282,10 @@ export async function previewMintController(request: Request, env: Env) {
         if (!contractAddress) {
             return errorResponse(400, 'contractAddress is required');
         }
-        const sharesParam = (Number(shares) * 10 ** 6);
+
+        // Convert to integer by first multiplying by 10^6 and then rounding to nearest integer
+        const sharesParam = Math.round(Number(shares) * 10 ** 6);
+
         const result = await readMagnifyV3Contract(env, contractAddress, 'previewMint', sharesParam);
         const serializedResult = serializeBigInt(result) / 10 ** 6;
         return apiResponse(200, 'previewMint successful', { lpAmount: serializedResult });
@@ -302,7 +305,8 @@ export async function previewDepositController(request: Request, env: Env) {
             return errorResponse(400, 'contractAddress is required');
         }
 
-        const assetsParam = (Number(assets) * 10 ** 6);
+        // Convert to integer by first multiplying by 10^6 and then rounding to nearest integer
+        const assetsParam = Math.round(Number(assets) * 10 ** 6);
 
         const result = await readMagnifyV3Contract(env, contractAddress, 'previewDeposit', assetsParam);
         const serializedResult = serializeBigInt(result) / 10 ** 6;
@@ -322,7 +326,8 @@ export async function previewWithdrawController(request: Request, env: Env) {
             return errorResponse(400, 'contractAddress is required');
         }
 
-        const assetsParam = (Number(assets) * 10 ** 6);
+        // Convert to integer by first multiplying by 10^6 and then rounding to nearest integer
+        const assetsParam = Math.round(Number(assets) * 10 ** 6);
 
         const result = await readMagnifyV3Contract(env, contractAddress, 'previewWithdraw', assetsParam);
         const serializedResult = serializeBigInt(result) / 10 ** 6;
@@ -341,7 +346,9 @@ export async function previewRedeemController(request: Request, env: Env) {
         if (!contractAddress) {
             return errorResponse(400, 'contractAddress is required');
         }
-        const sharesParam = (Number(shares) * 10 ** 6);
+
+        // Convert to integer by first multiplying by 10^6 and then rounding to nearest integer
+        const sharesParam = Math.round(Number(shares) * 10 ** 6);
 
         const result = await readMagnifyV3Contract(env, contractAddress, 'previewRedeem', sharesParam);
         const serializedResult = serializeBigInt(result) / 10 ** 6;
