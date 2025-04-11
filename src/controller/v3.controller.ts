@@ -14,6 +14,7 @@ import { getConnection, closeConnection } from '../database/init';
 import { QueryTypes } from "sequelize";
 import { initPublicClient } from "../utils/contract.utils";
 import MagnifyV3Abi from "../config/contracts/MagnifyV3.json";
+import { getUserLendingHistory } from "../database/queries/user.queries";
 // Create a map of contract addresses to metadata for efficient lookup - moved outside function for better performance
 const TOKEN_ADDRESS_MAP: Record<string, typeof TOKEN_METADATA[keyof typeof TOKEN_METADATA]> = {
     [TOKEN_METADATA.WLD.tokenAddress.toLowerCase()]: TOKEN_METADATA.WLD,
@@ -987,174 +988,34 @@ export async function getLpTokenHistoryController(request: Request, env: Env) {
 export async function getUserLendingHistoryController(request: Request, env: Env) {
     const url = new URL(request.url);
     const wallet = url.searchParams.get("wallet");
-    let historyResults: any[] = [];
+    const page = url.searchParams.get("page");
+    const pageSize = url.searchParams.get("pageSize");
 
     if (!wallet) {
         return errorResponse(400, 'wallet is required');
     }
 
     try {
-        const poolAdd = await readSoulboundContract(env, 'getMagnifyPools');
-        const poolAddresses = (poolAdd as string[]).map((pool: string) => pool.toLowerCase());
-        const initClient = await initPublicClient(env, WORLDCHAIN_RPC_URL);
+        const history = await getUserLendingHistory(wallet, page ? parseInt(page) : undefined, pageSize ? parseInt(pageSize) : undefined, env);
+        const currentPage = page ? parseInt(page) : 1;
+        const pageSizeNum = pageSize ? parseInt(pageSize) : 10;
+        const totalRecords = history[0]?.total_count || 0;
+        const totalPages = Math.ceil(totalRecords / pageSizeNum);
 
-        // Cache for block timestamps
-        const blockTimestampCache = new Map<bigint, bigint>();
-        
-        // Function to fetch multiple blocks in batches
-        const fetchBlockTimestamps = async (blockNumbers: bigint[]) => {
-            const uniqueBlocks = [...new Set(blockNumbers)].sort((a, b) => Number(a - b));
-            const uncachedBlocks = uniqueBlocks.filter(block => !blockTimestampCache.has(block));
-            
-            if (uncachedBlocks.length === 0) return;
-            
-            // Find the first block we need to fetch
-            const firstBlockToFetch = uncachedBlocks[0];
-            
-            // Fetch only the first block in the sequence
-            const firstBlock = await initClient.getBlock({ blockNumber: firstBlockToFetch });
-            blockTimestampCache.set(firstBlock.number, firstBlock.timestamp);
-            
-            // Calculate timestamps for subsequent blocks
-            for (let i = 1; i < uncachedBlocks.length; i++) {
-                const blockNumber = uncachedBlocks[i];
-                const previousBlockNumber = uncachedBlocks[i - 1];
-                const previousTimestamp = blockTimestampCache.get(previousBlockNumber)!;
-                const blocksDiff = Number(blockNumber - previousBlockNumber);
-                const timestamp = previousTimestamp + BigInt(blocksDiff * 2); // 2 seconds per block
-                blockTimestampCache.set(blockNumber, timestamp);
-            }
-        };
-
-        const getEventsInChunks = async (address: string, eventName: string, fromBlock: bigint, toBlock: bigint, args: any) => {
-            let allEvents: any[] = [];
-            let currentFromBlock = fromBlock;
-            
-            // Use a smaller block range to stay well within limits
-            const BLOCK_RANGE_LIMIT = 5000n; // Use 5000 blocks to be safe
-            
-            while (currentFromBlock < toBlock) {
-                const currentToBlock = currentFromBlock + BLOCK_RANGE_LIMIT > toBlock ? toBlock : currentFromBlock + BLOCK_RANGE_LIMIT;
-                
-                try {
-                    const events = await initClient.getContractEvents({
-                        address: address as `0x${string}`,
-                        abi: MagnifyV3Abi,
-                        eventName,
-                        args,
-                        fromBlock: currentFromBlock,
-                        toBlock: currentToBlock
-                    });
-                    
-                    if (events.length > 0) {
-                        // Get unique block numbers
-                        const uniqueBlockNumbers = [...new Set(events.map(event => event.blockNumber))];
-                        
-                        // Fetch timestamps for these blocks
-                        await fetchBlockTimestamps(uniqueBlockNumbers);
-                        
-                        // Add timestamp to each event
-                        const eventsWithTimestamps = events.map(event => ({
-                            eventName: (event as any).eventName,
-                            args: (event as any).args,
-                            timestamp: blockTimestampCache.get(event.blockNumber)
-                        }));
-                        
-                        allEvents = [...allEvents, ...eventsWithTimestamps];
-                    }
-                    
-                    currentFromBlock = currentToBlock + 1n;
-                } catch (error: any) {
-                    console.error(`Error fetching events for blocks ${currentFromBlock} to ${currentToBlock}:`, error);
-                    
-                    // If we hit the block range limit error, try with a smaller range
-                    if (error.message?.includes('eth_getLogs is limited to a 10,000 range')) {
-                        const smallerRange = BLOCK_RANGE_LIMIT / 2n;
-                        if (smallerRange < 1000n) {
-                            throw new Error('Block range too small to continue');
-                        }
-                        // Retry with smaller range
-                        const newToBlock = currentFromBlock + smallerRange;
-                        const events = await initClient.getContractEvents({
-                            address: address as `0x${string}`,
-                            abi: MagnifyV3Abi,
-                            eventName,
-                            args,
-                            fromBlock: currentFromBlock,
-                            toBlock: newToBlock
-                        });
-                        
-                        if (events.length > 0) {
-                            const uniqueBlockNumbers = [...new Set(events.map(event => event.blockNumber))];
-                            await fetchBlockTimestamps(uniqueBlockNumbers);
-                            const eventsWithTimestamps = events.map(event => ({
-                                eventName: (event as any).eventName,
-                                args: (event as any).args,
-                                timestamp: blockTimestampCache.get(event.blockNumber)
-                            }));
-                            allEvents = [...allEvents, ...eventsWithTimestamps];
-                        }
-                        
-                        currentFromBlock = newToBlock + 1n;
-                    } else {
-                        throw error;
-                    }
-                }
-            }
-            
-            return allEvents;
-        };
-
-        // Fetch all pool events in parallel
-        const poolPromises = poolAddresses.map(async (pool: string) => {
-            const deployedBlockNumber = await getPoolCreationTx(env, pool);
-            const currentBlock = await initClient.getBlockNumber();
-            
-            // Fetch deposit and withdraw events in parallel
-            const [depositEvents, withdrawEvents] = await Promise.all([
-                getEventsInChunks(
-                    pool,
-                    'Deposit',
-                    BigInt(deployedBlockNumber),
-                    currentBlock,
-                    { sender: wallet }
-                ),
-                getEventsInChunks(
-                    pool,
-                    'Withdraw',
-                    BigInt(deployedBlockNumber),
-                    currentBlock,
-                    { receiver: wallet }
-                )
-            ]);
-            
-            return [...depositEvents, ...withdrawEvents];
+        // Transform history to remove unnecessary fields
+        const transformedHistory = history.map(item => {
+            const { pool_id, total_count, id, ...rest } = item;
+            return rest;
         });
 
-        const results = await Promise.all(poolPromises);
-        historyResults = results.flat();
-
-        // Sort all events by timestamp
-        historyResults.sort((a, b) => {
-            if (a.timestamp < b.timestamp) return -1;
-            if (a.timestamp > b.timestamp) return 1;
-            return 0;
-        });
-
-        // Add formatted date to each event
-        historyResults = historyResults.map(event => ({
-            eventName: event.eventName,
-            assets: Number(event.args.assets) / 10 ** 6,
-            shares: Number(event.args.shares) / 10 ** 6,
-            timestamp: event.timestamp,
-            formattedDate: new Date(Number(event.timestamp) * 1000)
-                .toISOString()
-                .replace('T', ' ')
-                .replace(/\.\d+Z$/, '')
-        }));
-        console.log(historyResults.length);
-
-        return apiResponse(200, 'getUserLendingHistory successful', serializeBigInt(historyResults));
+        const pagination = {
+            totalRecords,
+            currentPage,
+            nextPage: currentPage < totalPages ? currentPage + 1 : null,
+            previousPage: currentPage > 1 ? currentPage - 1 : null,
+            totalPages
+        }
+        return apiResponse(200, 'getUserLendingHistory successful', { history: transformedHistory, pagination });
     } catch (err) {
         console.log(err);
         return errorResponse(500, 'Error getUserLendingHistoryCtrl');

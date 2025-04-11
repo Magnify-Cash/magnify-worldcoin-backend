@@ -9,12 +9,14 @@ import httpCall from 'http';
 import MagnifySoulboundAbi from '../config/contracts/MagnifySoulbound.json';
 import MagnifyV2Abi from '../config/contracts/MagnifyV2.json';
 import MagnifyV1Abi from '../config/contracts/MagnifyV1.json';
-
+import { readSoulboundContract } from '../helpers/v3.helper';
 
 export async function getContractAddress(env: Env) {
+    const v3PoolAddress = await readSoulboundContract(env, 'getMagnifyPools');
     const contractAddresses = [
-        V1_MAGNIFY_CONTRACT_ADDRESS, 
-        String(env.V2_MAGNIFY_CONTRACT_ADDRESS || '').trim()
+        V1_MAGNIFY_CONTRACT_ADDRESS,
+        String(env.V2_MAGNIFY_CONTRACT_ADDRESS || '').trim(),
+        ...(v3PoolAddress as string[])
       ].map(addr => addr.toLowerCase());
       return contractAddresses;
 }
