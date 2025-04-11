@@ -874,13 +874,16 @@ export const handleDailyLpTokenPriceJob = async (env: Env) => {
         for (const address of poolAddresses) {
             const addressLower = address.toLowerCase();
 
+            const poolName = await readMagnifyV3Contract(env, addressLower, 'name');
+            const poolSymbol = await readMagnifyV3Contract(env, addressLower, 'symbol');
+
             // Insert if not exists
             await connection.query(
-                `INSERT INTO pool_addresses (address)
-                 VALUES (?)
+                `INSERT INTO pool_addresses (address, name, symbol)
+                 VALUES (?, ?, ?)
                  ON CONFLICT (address) DO NOTHING;`,
                 {
-                    replacements: [addressLower],
+                    replacements: [addressLower, poolName, poolSymbol],
                     type: QueryTypes.INSERT
                 }
             );            
