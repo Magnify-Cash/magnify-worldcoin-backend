@@ -1160,3 +1160,37 @@ export async function getUserLendingHistoryController(request: Request, env: Env
         return errorResponse(500, 'Error getUserLendingHistoryCtrl');
     }
 }
+
+export async function getUserDefaultedLoanPoolStatusController(request: Request, env: Env) {
+    const url = new URL(request.url);
+    const wallet = url.searchParams.get("wallet");
+    const contract = url.searchParams.get("contract");
+
+    if (!wallet || !contract) {
+        return errorResponse(400, 'wallet and contract are required');
+    }
+
+    try {   
+       const status = await readMagnifyV3Contract(env, contract, 'hasDefaultedLoan', wallet);
+       return apiResponse(200, 'getUserDefaultedLoanPoolStatus successful', { hasDefaultedLoan: status });
+    } catch (err) {
+        return errorResponse(500, 'Error getUserDefaultedLoanPoolStatusCtrl');
+    }
+}
+
+export async function getUserDefaultedLoanPoolDataController(request: Request, env: Env) {
+    const url = new URL(request.url);
+    const wallet = url.searchParams.get("wallet");
+    const contract = url.searchParams.get("contract");
+
+    if (!wallet || !contract) {
+        return errorResponse(400, 'wallet and contract are required');
+    }
+
+    try {
+        const data = await readMagnifyV3Contract(env, contract, 'getDefaultedLoan', wallet);
+        return apiResponse(200, 'getUserDefaultedLoanPoolData successful', serializeBigInt(data));
+    } catch (err) {
+        return errorResponse(500, 'Error getUserDefaultedLoanPoolDataCtrl');
+    }
+}
