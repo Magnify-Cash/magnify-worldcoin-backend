@@ -2,17 +2,21 @@ import { createWalletClient, http, createPublicClient } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { Bytes, Hex, Hash } from 'ox';
 import { ACTION_TO_TIER, Env, ClaimAction } from '../config/interface';
-import { worldchain } from 'viem/chains';
-import { V1_MAGNIFY_CONTRACT_ADDRESS, WORLDCHAIN_RPC_URL } from '../config/constant';
+import { worldchain, worldchainSepolia } from 'viem/chains';
+import { V1_MAGNIFY_CONTRACT_ADDRESS, WORLDCHAIN_RPC_URL, V2_STAGING_CONTRACT_ADDRESS } from '../config/constant';
 import axios from 'axios';
 import httpCall from 'http';
-
-
+import MagnifySoulboundAbi from '../config/contracts/MagnifySoulbound.json';
+import MagnifyV2Abi from '../config/contracts/MagnifyV2.json';
+import MagnifyV1Abi from '../config/contracts/MagnifyV1.json';
+import { readSoulboundContract } from '../helpers/v3.helper';
 
 export async function getContractAddress(env: Env) {
+    const v3PoolAddress = await readSoulboundContract(env, 'getMagnifyPools');
     const contractAddresses = [
-        V1_MAGNIFY_CONTRACT_ADDRESS, 
-        String(env.V2_MAGNIFY_CONTRACT_ADDRESS || '').trim()
+        V1_MAGNIFY_CONTRACT_ADDRESS,
+        String(env.V2_MAGNIFY_CONTRACT_ADDRESS || '').trim(),
+        ...(v3PoolAddress as string[])
       ].map(addr => addr.toLowerCase());
       return contractAddresses;
 }
@@ -44,36 +48,14 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
             transport: http('https://worldchain-mainnet.g.alchemy.com/public'),
         });
 
-
-        const tier = ACTION_TO_TIER[action];
+       
+        //const tier = ACTION_TO_TIER[action];
         
         const hash = await client.writeContract({
-            address: V1_MAGNIFY_CONTRACT_ADDRESS,
-            abi: [
-                action.startsWith('mint')
-                    ? {
-                            name: 'mintNFT',
-                            type: 'function',
-                            stateMutability: 'nonpayable',
-                            inputs: [
-                                { name: 'to', type: 'address' },
-                                { name: 'tierId', type: 'uint256' },
-                            ],
-                            outputs: [],
-                        }
-                    : {
-                            name: 'upgradeNFT',
-                            type: 'function',
-                            stateMutability: 'nonpayable',
-                            inputs: [
-                                { name: 'tokenId', type: 'uint256' },
-                                { name: 'newTierId', type: 'uint256' },
-                            ],
-                            outputs: [],
-                        },
-            ],
-            functionName: action.startsWith('mint') ? 'mintNFT' : 'upgradeNFT',
-            args: action.startsWith('mint') ? [signal as `0x${string}`, BigInt(tier)] : [BigInt(tokenId!), BigInt(tier)],
+            address: env.SOULBOUND_NFT_CONTRACT_ADDRESS as `0x${string}`,
+            abi: MagnifySoulboundAbi,
+            functionName: 'mintNFT',
+            args: [signal as `0x${string}`, 100n],
         });
         return hash;
 
@@ -83,10 +65,55 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
     }
 }
 
-export async function initPublicClient(env: Env) {
+async function checkLoanStatus(client: any, contractAddress: `0x${string}`, abi: any, userNFTid: any) {
+    const loanStatus = await client.readContract({
+        address: contractAddress,
+        abi: abi,
+        functionName: "loans",
+        args: [userNFTid]
+    });
+    const serializedStatus = serializeBigInt(loanStatus);
+    const startTime = serializedStatus[1];
+    const currentStatus = serializedStatus[2];
+    const loanPeriod = serializedStatus[4];
+    
+    return startTime + loanPeriod < Date.now() || currentStatus === true;
+}
+
+export async function checkUserV2LoanStatus(userNFTid: any, env: Env) {
+    const client = await initPublicClient(env, WORLDCHAIN_RPC_URL);
+
+    const v2Status = await checkLoanStatus(
+        client,
+        env.V2_MAGNIFY_CONTRACT_ADDRESS as `0x${string}`,
+        MagnifyV2Abi,
+        userNFTid
+    );
+    if (v2Status) return true;
+
+    const v2StagingStatus = await checkLoanStatus(
+        client,
+        V2_STAGING_CONTRACT_ADDRESS as `0x${string}`,
+        MagnifyV2Abi,
+        userNFTid
+    );
+    if (v2StagingStatus) return true;
+
+    const v1Status = await checkLoanStatus(
+        client,
+        V1_MAGNIFY_CONTRACT_ADDRESS,
+        MagnifyV1Abi,
+        userNFTid
+    );
+    if (v1Status) return true;
+
+    return false;
+}
+
+export async function initPublicClient(env: Env, rpcUrl: string) {
         const client = createPublicClient({
             chain: worldchain,
-            transport: http(WORLDCHAIN_RPC_URL),
+            transport: http(rpcUrl),
         });
         return client;
 } 
