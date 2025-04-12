@@ -41,7 +41,8 @@ import { getSoulboundDataController,
 	getPoolEarlyExitFeeController,
 	getPoolDefaultPenaltyController,
 	getUserDefaultedLoanPoolStatusController,
-	getUserDefaultedLoanPoolDataController
+	getUserDefaultedLoanPoolDataController,
+	getV3DefaultLoanIndexController
  } from './controller/v3.controller';
 import { getEthBalanceController, getUSDCBalanceController, getTokenMetadataController, getWalletTokenPortfolioController } from './controller/v3.controller';
 
@@ -170,6 +171,8 @@ export default {
 				return getUserDefaultedLoanPoolStatusController(request, env);
 			case '/v3/user/default/data':
 				return getUserDefaultedLoanPoolDataController(request, env);
+			case '/v3/default/loan/index':
+				return getV3DefaultLoanIndexController(request, env);
 			default:
 				return errorResponse(404, 'Not Found');
 		}
