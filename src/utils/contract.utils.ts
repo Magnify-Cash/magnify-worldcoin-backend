@@ -65,53 +65,48 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
     }
 }
 
+async function checkLoanStatus(client: any, contractAddress: `0x${string}`, abi: any, userNFTid: any) {
+    const loanStatus = await client.readContract({
+        address: contractAddress,
+        abi: abi,
+        functionName: "loans",
+        args: [userNFTid]
+    });
+    const serializedStatus = serializeBigInt(loanStatus);
+    const startTime = serializedStatus[1];
+    const currentStatus = serializedStatus[2];
+    const loanPeriod = serializedStatus[4];
+    
+    return startTime + loanPeriod < Date.now() || currentStatus === true;
+}
+
 export async function checkUserV2LoanStatus(userNFTid: any, env: Env) {
     const client = await initPublicClient(env, WORLDCHAIN_RPC_URL);
 
-    const loanV2Status = await client.readContract({
-        address: env.V2_MAGNIFY_CONTRACT_ADDRESS as `0x${string}`,
-        abi: MagnifyV2Abi,
-        functionName: "loans",
-        args: [userNFTid]
-    })
-    const serializeLoanV2Status = serializeBigInt(loanV2Status);
-    const loanV2StartTime = serializeLoanV2Status[1];
-    const loanV2LoanPeriod = serializeLoanV2Status[4];
+    const v2Status = await checkLoanStatus(
+        client,
+        env.V2_MAGNIFY_CONTRACT_ADDRESS as `0x${string}`,
+        MagnifyV2Abi,
+        userNFTid
+    );
+    if (v2Status) return true;
 
-    if (loanV2StartTime + loanV2LoanPeriod < Date.now()) {
-        return true;
-    }
+    const v2StagingStatus = await checkLoanStatus(
+        client,
+        V2_STAGING_CONTRACT_ADDRESS as `0x${string}`,
+        MagnifyV2Abi,
+        userNFTid
+    );
+    if (v2StagingStatus) return true;
 
-    const loanV2StagingStatus = await client.readContract({
-        address: V2_STAGING_CONTRACT_ADDRESS as `0x${string}`,
-        abi: MagnifyV2Abi,
-        functionName: "loans",
-        args: [userNFTid]
-    })
-    const serializeLoanV2StagingStatus = serializeBigInt(loanV2StagingStatus);
-    const loanV2StagingStartTime = serializeLoanV2StagingStatus[1];
-    const loanV2StagingLoanPeriod = serializeLoanV2StagingStatus[4];
+    const v1Status = await checkLoanStatus(
+        client,
+        V1_MAGNIFY_CONTRACT_ADDRESS,
+        MagnifyV1Abi,
+        userNFTid
+    );
+    if (v1Status) return true;
 
-    if (loanV2StagingStartTime + loanV2StagingLoanPeriod < Date.now()) {
-        return true;
-    }
-    
-    const loanV1Status = await client.readContract({
-        address: V1_MAGNIFY_CONTRACT_ADDRESS,
-        abi: MagnifyV1Abi,
-        functionName: "loans",
-        args: [userNFTid]
-    })
-    const serializeLoanV1Status = serializeBigInt(loanV1Status);
-    const loanV1StartTime = serializeLoanV1Status[1];
-    const loanV1LoanPeriod = serializeLoanV1Status[4];
-
-    if (loanV1StartTime + loanV1LoanPeriod < Date.now()) {
-        return true;
-    }
-    if (serializeLoanV2Status[2] === true || serializeLoanV1Status[2] === true) {
-        return true;
-    } 
     return false;
 }
 
