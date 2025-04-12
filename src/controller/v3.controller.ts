@@ -991,12 +991,15 @@ export async function getUserLendingHistoryController(request: Request, env: Env
     const page = url.searchParams.get("page");
     const pageSize = url.searchParams.get("pageSize");
 
-    if (!wallet) {
+    // wallet lowercase
+    const walletLower = wallet?.toLowerCase();
+
+    if (!walletLower) {
         return errorResponse(400, 'wallet is required');
     }
 
     try {
-        const history = await getUserLendingHistory(wallet, page ? parseInt(page) : undefined, pageSize ? parseInt(pageSize) : undefined, env);
+        const history = await getUserLendingHistory(walletLower, page ? parseInt(page) : undefined, pageSize ? parseInt(pageSize) : undefined, env);
         const currentPage = page ? parseInt(page) : 1;
         const pageSizeNum = pageSize ? parseInt(pageSize) : 10;
         const totalRecords = history[0]?.total_count || 0;
@@ -1053,5 +1056,24 @@ export async function getUserDefaultedLoanPoolDataController(request: Request, e
         return apiResponse(200, 'getUserDefaultedLoanPoolData successful', serializeBigInt(data));
     } catch (err) {
         return errorResponse(500, 'Error getUserDefaultedLoanPoolDataCtrl');
+    }
+}
+
+export async function getV3DefaultLoanIndexController(request: Request, env: Env) {
+    const url = new URL(request.url);
+    const wallet = url.searchParams.get("wallet");
+    const contract = url.searchParams.get("contract");
+
+    if (!wallet || !contract) {
+        return errorResponse(400, 'wallet and contract are required');
+    }
+
+    try {
+        const result = await readMagnifyV3Contract(env, contract, 'getLoanHistory', wallet);
+        const serializedResult = serializeBigInt(result);
+        const defaultLoanIndex = serializedResult.findIndex((item: any) => item.isDefault === true);
+        return apiResponse(200, 'getV3DefaultLoanIndex successful', { index: defaultLoanIndex !== -1 ? defaultLoanIndex : null });
+    } catch (err) {
+        return errorResponse(500, 'Error getV3DefaultLoanIndexCtrl');
     }
 }
