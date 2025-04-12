@@ -3,7 +3,7 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { Bytes, Hex, Hash } from 'ox';
 import { ACTION_TO_TIER, Env, ClaimAction } from '../config/interface';
 import { worldchain, worldchainSepolia } from 'viem/chains';
-import { V1_MAGNIFY_CONTRACT_ADDRESS, WORLDCHAIN_RPC_URL } from '../config/constant';
+import { V1_MAGNIFY_CONTRACT_ADDRESS, WORLDCHAIN_RPC_URL, V2_STAGING_CONTRACT_ADDRESS } from '../config/constant';
 import axios from 'axios';
 import httpCall from 'http';
 import MagnifySoulboundAbi from '../config/contracts/MagnifySoulbound.json';
@@ -67,6 +67,7 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
 
 export async function checkUserV2LoanStatus(userNFTid: any, env: Env) {
     const client = await initPublicClient(env, WORLDCHAIN_RPC_URL);
+
     const loanV2Status = await client.readContract({
         address: env.V2_MAGNIFY_CONTRACT_ADDRESS as `0x${string}`,
         abi: MagnifyV2Abi,
@@ -80,6 +81,21 @@ export async function checkUserV2LoanStatus(userNFTid: any, env: Env) {
     if (loanV2StartTime + loanV2LoanPeriod < Date.now()) {
         return true;
     }
+
+    const loanV2StagingStatus = await client.readContract({
+        address: V2_STAGING_CONTRACT_ADDRESS as `0x${string}`,
+        abi: MagnifyV2Abi,
+        functionName: "loans",
+        args: [userNFTid]
+    })
+    const serializeLoanV2StagingStatus = serializeBigInt(loanV2StagingStatus);
+    const loanV2StagingStartTime = serializeLoanV2StagingStatus[1];
+    const loanV2StagingLoanPeriod = serializeLoanV2StagingStatus[4];
+
+    if (loanV2StagingStartTime + loanV2StagingLoanPeriod < Date.now()) {
+        return true;
+    }
+    
     const loanV1Status = await client.readContract({
         address: V1_MAGNIFY_CONTRACT_ADDRESS,
         abi: MagnifyV1Abi,
