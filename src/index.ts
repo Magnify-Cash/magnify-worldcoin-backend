@@ -173,6 +173,9 @@ export default {
 				return getUserDefaultedLoanPoolDataController(request, env);
 			case '/v3/default/loan/index':
 				return getV3DefaultLoanIndexController(request, env);
+			case '/triggerTest':
+				await triggerProcessDefaultPoolController(env);
+				return apiResponse(200, 'Test triggered successfully');
 			default:
 				return errorResponse(404, 'Not Found');
 		}
