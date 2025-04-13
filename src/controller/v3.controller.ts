@@ -12,9 +12,12 @@ import { getBlockTimestamp } from "../helpers/v3.helper";
 import { TOKEN_METADATA } from "../config/constant";
 import { getConnection, closeConnection } from '../database/init'; 
 import { QueryTypes } from "sequelize";
-import { initPublicClient } from "../utils/contract.utils";
 import MagnifyV3Abi from "../config/contracts/MagnifyV3.json";
 import { getUserLendingHistory } from "../database/queries/user.queries";
+import { privateKeyToAccount } from "viem/accounts";
+import { Hex } from "ox";
+import { createWalletClient, http } from "viem";
+import { worldchain } from "viem/chains";
 // Create a map of contract addresses to metadata for efficient lookup - moved outside function for better performance
 const TOKEN_ADDRESS_MAP: Record<string, typeof TOKEN_METADATA[keyof typeof TOKEN_METADATA]> = {
     [TOKEN_METADATA.WLD.tokenAddress.toLowerCase()]: TOKEN_METADATA.WLD,
@@ -853,15 +856,37 @@ export async function getPoolUserLPBalanceController(request: Request, env: Env)
 
 export async function triggerProcessDefaultPoolController(env: Env) {
     try {
-        const poolAddresses = await readSoulboundContract(env, 'getMagnifyPools');
-        console.log(poolAddresses);
+        let privateKey = String(env.PRIVATE_KEY || '').trim();
+        if (!privateKey) {
+            throw new Error('PRIVATE_KEY is undefined or empty after sanitization');
+        }
+        if (!privateKey.startsWith('0x')) {
+            privateKey = `0x${privateKey}`;
+        }
+
+        const account = privateKeyToAccount(privateKey as Hex.Hex);
+        const client = createWalletClient({
+            account,
+            chain: worldchain,
+            transport: http(WORLDCHAIN_RPC_URL),
+        });
+        const poolAddresses = await readSoulboundContract(env, 'getMagnifyPools') as string[];
+        for (const address of poolAddresses) {
+            const normalizedAddress = address.toLowerCase() as `0x${string}`;
+            const hash = await client.writeContract({
+                address: normalizedAddress,
+                abi: MagnifyV3Abi,
+                functionName: 'processOutdatedLoans',
+            });
+            console.log(`Processed outdated loans for ${normalizedAddress}: ${hash}`);
+        }
     } catch (err) {
         throw err;
     }
 }
 
 export const handleDailyLpTokenPriceJob = async (env: Env) => {
-    const poolAddresses = await readSoulboundContract(env, 'getMagnifyPools');
+    const poolAddresses = await readSoulboundContract(env, 'getMagnifyPools') as string[];
     if (!Array.isArray(poolAddresses) || !poolAddresses.every(addr => typeof addr === 'string')) {
         throw new Error('Invalid response: Expected an array of strings');
     }
