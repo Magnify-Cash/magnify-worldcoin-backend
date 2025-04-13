@@ -865,20 +865,51 @@ export async function triggerProcessDefaultPoolController(env: Env) {
         }
 
         const account = privateKeyToAccount(privateKey as Hex.Hex);
-        const client = createWalletClient({
-            account,
-            chain: worldchain,
-            transport: http(WORLDCHAIN_RPC_URL),
-        });
         const poolAddresses = await readSoulboundContract(env, 'getMagnifyPools') as string[];
+        
         for (const address of poolAddresses) {
             const normalizedAddress = address.toLowerCase() as `0x${string}`;
-            const hash = await client.writeContract({
-                address: normalizedAddress,
-                abi: MagnifyV3Abi,
-                functionName: 'processOutdatedLoans',
-            });
-            console.log(`Processed outdated loans for ${normalizedAddress}: ${hash}`);
+            let success = false;
+            
+            // Try each RPC URL with retry logic
+            for (let rpcUrlIndex = 0; rpcUrlIndex < RPC_URLS.length; rpcUrlIndex++) {
+                let maxRetries = 3;
+                let retryCount = 0;
+                
+                while (retryCount < maxRetries) {
+                    try {
+                        const client = createWalletClient({
+                            account,
+                            chain: worldchain,
+                            transport: http(RPC_URLS[rpcUrlIndex]),
+                        });
+                        
+                        const hash = await client.writeContract({
+                            address: normalizedAddress,
+                            abi: MagnifyV3Abi,
+                            functionName: 'processOutdatedLoans',
+                        });
+                        console.log(`Processed outdated loans for ${normalizedAddress} using RPC URL #${rpcUrlIndex + 1}: ${hash}`);
+                        success = true;
+                        break;
+                    } catch (err) {
+                        retryCount++;
+                        const backoffMs = 1000 * Math.pow(2, retryCount);
+                        console.log(`RPC request failed for ${normalizedAddress} using RPC URL #${rpcUrlIndex + 1}, retrying in ${backoffMs}ms (${retryCount}/${maxRetries})`);
+                        await sleep(backoffMs);
+                    }
+                }
+                
+                if (success) break;
+                
+                if (rpcUrlIndex < RPC_URLS.length - 1) {
+                    console.log(`Failed with RPC URL #${rpcUrlIndex + 1} for ${normalizedAddress}, switching to next fallback URL`);
+                }
+            }
+            
+            if (!success) {
+                console.error(`Failed to process outdated loans for ${normalizedAddress} after trying all ${RPC_URLS.length} RPC URLs`);
+            }
         }
     } catch (err) {
         throw err;
