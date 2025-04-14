@@ -1145,11 +1145,13 @@ export async function hasDefaultedLegacyLoanController(request: Request, env: En
             return errorResponse(400, 'Both contract and user address are required');
         }
 
+        const normalizedAddress = userAddress.toLowerCase() as `0x${string}`;
+
         const result = await readFromDefaultsContract(
             env,
             contractAddress,
             'hasDefaultedLegacyLoan',
-            userAddress
+            normalizedAddress
         );
 
         return apiResponse(200, 'hasDefaultedLegacyLoan fetched successfully', {
