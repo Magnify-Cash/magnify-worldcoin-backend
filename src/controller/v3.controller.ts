@@ -1161,3 +1161,46 @@ export async function hasDefaultedLegacyLoanController(request: Request, env: En
         return errorResponse(500, 'Error fetching hasDefaultedLegacyLoan');
     }
 }
+
+export async function getDefaultedLegacyLoanController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const userAddress = url.searchParams.get("user");
+        const contractAddress = DEFAULTS_CONTRACT;
+
+        if (!contractAddress || !userAddress) {
+            return errorResponse(400, "Both contract and user address are required");
+        }
+
+        const normalizedAddress = userAddress.toLowerCase() as `0x${string}`;
+
+        const [borrower, loan] = await readFromDefaultsContract(
+            env,
+            contractAddress,
+            "getDefaultedLegacyLoan",
+            normalizedAddress
+        ) as [string, {
+            amount: bigint;
+            startTime: bigint;
+            isActive: boolean;
+            interestRate: bigint;
+            loanPeriod: bigint;
+        }];
+
+        const parsedLoan = {
+            amount: Number(loan.amount) / 10 ** 6,
+            startTime: Number(loan.startTime),
+            isActive: loan.isActive,
+            interestRate: Number(loan.interestRate) / 100,
+            loanPeriod: Number(loan.loanPeriod)
+        };
+
+        return apiResponse(200, "getDefaultedLegacyLoan fetched successfully", {
+            borrower,
+            loan: parsedLoan
+        });
+    } catch (err) {
+        console.error(err);
+        return errorResponse(500, "Error fetching getDefaultedLegacyLoan");
+    }
+}
