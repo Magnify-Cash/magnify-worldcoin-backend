@@ -1204,3 +1204,28 @@ export async function getDefaultedLegacyLoanController(request: Request, env: En
         return errorResponse(500, "Error fetching getDefaultedLegacyLoan");
     }
 }
+
+export async function getDefaultedLegacyLoanFeeController(env: Env) {
+    try {
+        const contractAddress = DEFAULTS_CONTRACT;
+
+        if (!contractAddress) {
+            return errorResponse(400, "Contract Address is required");
+        }
+
+        const result = await readFromDefaultsContract(
+            env,
+            contractAddress,
+            "repaymentFee"
+        );
+
+        const serializedResult = serializeBigInt(result) / 10 ** 2;
+
+        return apiResponse(200, "getDefaultedLegacyLoanFee fetched successfully", {
+            repaymentFee: serializedResult
+        });
+    } catch (err) {
+        console.error(err);
+        return errorResponse(500, "Error fetching getDefaultedLegacyLoan");
+    }
+}
