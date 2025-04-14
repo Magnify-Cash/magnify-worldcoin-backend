@@ -1,5 +1,5 @@
 import { Env } from "../config/interface";
-import { formatDate, getPoolCreationTx, readMagnifyV3Contract, readSoulboundContract } from "../helpers/v3.helper";
+import { formatDate, getPoolCreationTx, readMagnifyV3Contract, readSoulboundContract, readFromDefaultsContract } from "../helpers/v3.helper";
 import { apiResponse, errorResponse } from "../utils/apiResponse.utils"
 import { getEthBalance, getUSDCBalance, getTokenMetadata, getWalletTokenPortfolio } from "../helpers/token.helper";
 import { serializeBigInt } from "../utils/contract.utils";
@@ -9,7 +9,7 @@ import { WORLDCHAIN_RPC_URL, WORLDCHAIN_RPC_URL_V2, WORLDCHAIN_RPC_URL_V3 } from
 import { rpcBatchCall } from "../utils/contract.utils";
 import { getBlockTimestamp } from "../helpers/v3.helper";
 // query params of the pool
-import { TOKEN_METADATA } from "../config/constant";
+import { TOKEN_METADATA, DEFAULTS_CONTRACT } from "../config/constant";
 import { getConnection, closeConnection } from '../database/init'; 
 import { QueryTypes } from "sequelize";
 import MagnifyV3Abi from "../config/contracts/MagnifyV3.json";
@@ -18,6 +18,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { Hex } from "ox";
 import { createWalletClient, http } from "viem";
 import { worldchain } from "viem/chains";
+
 // Create a map of contract addresses to metadata for efficient lookup - moved outside function for better performance
 const TOKEN_ADDRESS_MAP: Record<string, typeof TOKEN_METADATA[keyof typeof TOKEN_METADATA]> = {
     [TOKEN_METADATA.WLD.tokenAddress.toLowerCase()]: TOKEN_METADATA.WLD,
@@ -1131,5 +1132,30 @@ export async function getV3DefaultLoanIndexController(request: Request, env: Env
         return apiResponse(200, 'getV3DefaultLoanIndex successful', { index: defaultLoanIndex !== -1 ? defaultLoanIndex : null });
     } catch (err) {
         return errorResponse(500, 'Error getV3DefaultLoanIndexCtrl');
+    }
+}
+
+export async function hasDefaultedLegacyLoanController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const userAddress = url.searchParams.get("user");
+        const contractAddress = DEFAULTS_CONTRACT
+
+        if (!contractAddress || !userAddress) {
+            return errorResponse(400, 'Both contract and user address are required');
+        }
+
+        const result = await readFromDefaultsContract(
+            env,
+            contractAddress,
+            'hasDefaultedLegacyLoan',
+            userAddress
+        );
+
+        return apiResponse(200, 'hasDefaultedLegacyLoan fetched successfully', {
+            hasDefaulted: result
+        });
+    } catch (err) {
+        return errorResponse(500, 'Error fetching hasDefaultedLegacyLoan');
     }
 }

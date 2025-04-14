@@ -42,7 +42,8 @@ import { getSoulboundDataController,
 	getPoolDefaultPenaltyController,
 	getUserDefaultedLoanPoolStatusController,
 	getUserDefaultedLoanPoolDataController,
-	getV3DefaultLoanIndexController
+	getV3DefaultLoanIndexController,
+	hasDefaultedLegacyLoanController
  } from './controller/v3.controller';
 import { getEthBalanceController, getUSDCBalanceController, getTokenMetadataController, getWalletTokenPortfolioController } from './controller/v3.controller';
 
@@ -176,6 +177,8 @@ export default {
 			case '/triggerTest':
 				await triggerProcessDefaultPoolController(env);
 				return apiResponse(200, 'Test triggered successfully');
+			case '/get/user/defaultedLoan':
+				return hasDefaultedLegacyLoanController(request, env);
 			default:
 				return errorResponse(404, 'Not Found');
 		}
