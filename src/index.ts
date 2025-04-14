@@ -41,7 +41,8 @@ import { getSoulboundDataController,
 	getPoolEarlyExitFeeController,
 	getPoolDefaultPenaltyController,
 	getUserDefaultedLoanPoolStatusController,
-	getUserDefaultedLoanPoolDataController
+	getUserDefaultedLoanPoolDataController,
+	getV3DefaultLoanIndexController
  } from './controller/v3.controller';
 import { getEthBalanceController, getUSDCBalanceController, getTokenMetadataController, getWalletTokenPortfolioController } from './controller/v3.controller';
 
@@ -170,14 +171,19 @@ export default {
 				return getUserDefaultedLoanPoolStatusController(request, env);
 			case '/v3/user/default/data':
 				return getUserDefaultedLoanPoolDataController(request, env);
+			case '/v3/default/loan/index':
+				return getV3DefaultLoanIndexController(request, env);
+			case '/triggerTest':
+				await triggerProcessDefaultPoolController(env);
+				return apiResponse(200, 'Test triggered successfully');
 			default:
 				return errorResponse(404, 'Not Found');
 		}
 	},
 	async scheduled(controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
-		console.log('Scheduled task executed');
-		await handleDailyLpTokenPriceJob(env);
+		//await handleDailyLpTokenPriceJob(env);
 		await triggerProcessDefaultPoolController(env);
+		console.log('Scheduled task executed');
 	}
 } satisfies ExportedHandler<Env>;
 
