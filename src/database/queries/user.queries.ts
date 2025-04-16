@@ -209,3 +209,25 @@ export const getUserLendingHistory = async (wallet: string, page: number = 1, pa
     }
 }
 
+export const getPoolLpTokenPrice = async (poolAddress: string, env: Env) => {
+    let connection = null;
+    try {
+        connection = await getConnection(env);
+        const result = await connection.query(
+            `SELECT pool_lp_tokens.token_price, pool_lp_tokens.timestamp, pool_lp_tokens.created_at      
+            FROM pool_lp_tokens
+            LEFT JOIN pool_addresses ON pool_addresses.id = pool_lp_tokens.pool_id
+            WHERE pool_addresses.address = $1
+            ORDER BY timestamp DESC`,
+            { bind: [poolAddress], type: QueryTypes.SELECT }
+        );
+        return result;
+    } catch(err) {
+        console.error('Error getting pool lp token price:', err);
+        throw err;
+    } finally {
+        if (connection) {
+            await closeConnection(connection);
+        }
+    }
+}
