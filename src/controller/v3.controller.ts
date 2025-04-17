@@ -13,7 +13,7 @@ import { TOKEN_METADATA, DEFAULTS_CONTRACT } from "../config/constant";
 import { getConnection, closeConnection } from '../database/init'; 
 import { QueryTypes } from "sequelize";
 import MagnifyV3Abi from "../config/contracts/MagnifyV3.json";
-import { getUserLendingHistory } from "../database/queries/user.queries";
+import { getUserLendingHistory, getPoolLpTokenPrice } from "../database/queries/user.queries";
 import { privateKeyToAccount } from "viem/accounts";
 import { Hex } from "ox";
 import { createWalletClient, http } from "viem";
@@ -1227,5 +1227,21 @@ export async function getDefaultedLegacyLoanFeeController(env: Env) {
     } catch (err) {
         console.error(err);
         return errorResponse(500, "Error fetching getDefaultedLegacyLoan");
+    }
+}
+
+export async function getPoolLpTokenPriceController(request: Request, env: Env) {
+    const url = new URL(request.url);
+    const contract = url.searchParams.get("contract");
+
+    if (!contract) {
+        return errorResponse(400, 'contract is required');
+    }
+
+    try {
+        const price = await getPoolLpTokenPrice(contract, env);
+        return apiResponse(200, 'getPoolLpTokenPrice successful', price);
+    } catch (err) {
+        return errorResponse(500, 'Error getPoolLpTokenPriceCtrl');
     }
 }

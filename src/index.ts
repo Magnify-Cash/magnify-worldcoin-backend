@@ -43,6 +43,7 @@ import { getSoulboundDataController,
 	getUserDefaultedLoanPoolStatusController,
 	getUserDefaultedLoanPoolDataController,
 	getV3DefaultLoanIndexController,
+	getPoolLpTokenPriceController,
 	hasDefaultedLegacyLoanController,
 	getDefaultedLegacyLoanController,
 	getDefaultedLegacyLoanFeeController,
@@ -179,6 +180,8 @@ export default {
 			case '/triggerTest':
 				await triggerProcessDefaultPoolController(env);
 				return apiResponse(200, 'Test triggered successfully');
+			case '/v3/pool/lp/price':
+				return getPoolLpTokenPriceController(request, env);
 			case '/get/user/defaultedLoan':
 				return hasDefaultedLegacyLoanController(request, env);
 			case '/get/user/defaultedLoan/data':
