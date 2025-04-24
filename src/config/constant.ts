@@ -17,9 +17,9 @@ export const WORLDSCAN_PATH = {
 }
 //https://icy-greatest-dream.worldchain-mainnet.quiknode.pro/f465b27e9a8dbd90d16bfb3bca7b2193bc1dcfa8/
 //https://worldchain-sepolia.gateway.tenderly.co
-export const WORLDCHAIN_RPC_URL = "https://icy-greatest-dream.worldchain-mainnet.quiknode.pro/f465b27e9a8dbd90d16bfb3bca7b2193bc1dcfa8/"//"https://chaotic-fabled-water.worldchain-sepolia.quiknode.pro/3f033f9e1b6829b9b352bed07914e122c10ec1d4/"//"https://icy-greatest-dream.worldchain-mainnet.quiknode.pro/f465b27e9a8dbd90d16bfb3bca7b2193bc1dcfa8/"
-export const WORLDCHAIN_RPC_URL_V2 = "https://worldchain-mainnet.g.alchemy.com/v2/Cj_65mRSyh2uxEc9RCI6JhMQSOVwz56m"  //"https://chaotic-fabled-water.worldchain-sepolia.quiknode.pro/3f033f9e1b6829b9b352bed07914e122c10ec1d4/" 
-export const WORLDCHAIN_RPC_URL_V3 = "https://worldchain-mainnet.g.alchemy.com/public" //"https://worldchain-sepolia.g.alchemy.com/v2/Cj_65mRSyh2uxEc9RCI6JhMQSOVwz56m"
+export const WORLDCHAIN_RPC_URL = "https://yolo-intensive-owl.worldchain-mainnet.quiknode.pro/02bc3fb4f359e0c2dadc693ec8c9de8288edfad8/"//"https://chaotic-fabled-water.worldchain-sepolia.quiknode.pro/3f033f9e1b6829b9b352bed07914e122c10ec1d4/"//"https://icy-greatest-dream.worldchain-mainnet.quiknode.pro/f465b27e9a8dbd90d16bfb3bca7b2193bc1dcfa8/"
+export const WORLDCHAIN_RPC_URL_V2 = "https://misty-bold-sky.worldchain-mainnet.quiknode.pro/235d010fc088f8547cd7a07b1cb648c40438c0a6/"  //"https://chaotic-fabled-water.worldchain-sepolia.quiknode.pro/3f033f9e1b6829b9b352bed07914e122c10ec1d4/" 
+export const WORLDCHAIN_RPC_URL_V3 = "https://alien-frosty-snowflake.worldchain-mainnet.quiknode.pro/3232f588cd316dd1f32d9e059004d8459f972dcb/" //"https://worldchain-sepolia.g.alchemy.com/v2/Cj_65mRSyh2uxEc9RCI6JhMQSOVwz56m"
 export const WORLDCHAIN_ALCHEMY_RPC_URL = "https://worldchain-mainnet.g.alchemy.com/v2/Cj_65mRSyh2uxEc9RCI6JhMQSOVwz56m"
 
 export const SALT_ROUNDS = 10;
