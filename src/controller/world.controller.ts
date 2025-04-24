@@ -149,9 +149,13 @@ export async function verifyWorldUserController(request: Request, env: Env) {
             functionName: "userNFT",
             args: [signal]
         })
-        const v2LoanStatus = await checkUserV2LoanStatus(userNFTid, env);
-        if (v2LoanStatus) {
-            return errorResponse(400, 'User has active/defaulted loans on V1/V2');
+        
+        // Skip V2 loan status check if user has no NFT
+        if (userNFTid !== 0n) {
+            const v2LoanStatus = await checkUserV2LoanStatus(userNFTid, env);
+            if (v2LoanStatus) {
+                return errorResponse(400, 'User has active/defaulted loans on V1/V2');
+            }
         }
         const transactionHash = await mintNFT(action as ClaimAction, signal as `0x${string}`, tokenId, env);
         if (!transactionHash) {
