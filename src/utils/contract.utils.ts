@@ -3,13 +3,14 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { Bytes, Hex, Hash } from 'ox';
 import { ACTION_TO_TIER, Env, ClaimAction } from '../config/interface';
 import { worldchain, worldchainSepolia } from 'viem/chains';
-import { V1_MAGNIFY_CONTRACT_ADDRESS, WORLDCHAIN_RPC_URL, V2_STAGING_CONTRACT_ADDRESS } from '../config/constant';
+import { V1_MAGNIFY_CONTRACT_ADDRESS, WORLDCHAIN_RPC_URL, V2_STAGING_CONTRACT_ADDRESS, DEFAULTS_CONTRACT } from '../config/constant';
 import axios from 'axios';
 import httpCall from 'http';
 import MagnifySoulboundAbi from '../config/contracts/MagnifySoulbound.json';
 import MagnifyV2Abi from '../config/contracts/MagnifyV2.json';
 import MagnifyV1Abi from '../config/contracts/MagnifyV1.json';
 import { readSoulboundContract } from '../helpers/v3.helper';
+import { readFromDefaultsContract } from '../helpers/v3.helper';
 
 export async function getContractAddress(env: Env) {
     const v3PoolAddress = await readSoulboundContract(env, 'getMagnifyPools');
@@ -65,7 +66,7 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
     }
 }
 
-async function checkLoanStatus(client: any, contractAddress: `0x${string}`, abi: any, userNFTid: any) {
+async function checkLoanStatus(client: any, contractAddress: `0x${string}`, abi: any, userNFTid: any, defaultedLoanStatus: boolean) {
     const loanStatus = await client.readContract({
         address: contractAddress,
         abi: abi,
@@ -83,17 +84,20 @@ async function checkLoanStatus(client: any, contractAddress: `0x${string}`, abi:
     const currentStatus = serializedStatus[2];
     const loanPeriod = serializedStatus[4];
     
-    return startTime + loanPeriod < Date.now() || currentStatus === true;
+    return startTime + loanPeriod < Date.now() || (currentStatus === true && defaultedLoanStatus === true) ? true : false;
 }
 
-export async function checkUserV2LoanStatus(userNFTid: any, env: Env) {
+export async function checkUserV2LoanStatus(userNFTid: any, userAddress: `0x${string}`, env: Env) {
     const client = await initPublicClient(env, WORLDCHAIN_RPC_URL);
+
+    const defaultedLoan = await readFromDefaultsContract(env, DEFAULTS_CONTRACT, 'hasDefaultedLegacyLoan', userAddress);
 
     const v2Status = await checkLoanStatus(
         client,
         env.V2_MAGNIFY_CONTRACT_ADDRESS as `0x${string}`,
         MagnifyV2Abi,
-        userNFTid
+        userNFTid,
+        defaultedLoan as boolean
     );
     if (v2Status) return true;
 
@@ -101,7 +105,8 @@ export async function checkUserV2LoanStatus(userNFTid: any, env: Env) {
         client,
         V2_STAGING_CONTRACT_ADDRESS as `0x${string}`,
         MagnifyV2Abi,
-        userNFTid
+        userNFTid,
+        defaultedLoan as boolean
     );
     if (v2StagingStatus) return true;
 
@@ -109,7 +114,8 @@ export async function checkUserV2LoanStatus(userNFTid: any, env: Env) {
         client,
         V1_MAGNIFY_CONTRACT_ADDRESS,
         MagnifyV1Abi,
-        userNFTid
+        userNFTid,
+        defaultedLoan as boolean
     );
     if (v1Status) return true;
 
