@@ -152,7 +152,7 @@ export async function verifyWorldUserController(request: Request, env: Env) {
         
         // Skip V2 loan status check if user has no NFT
         if (userNFTid !== 0n) {
-            const v2LoanStatus = await checkUserV2LoanStatus(userNFTid, env);
+            const v2LoanStatus = await checkUserV2LoanStatus(userNFTid, signal as `0x${string}`, env);
             if (v2LoanStatus) {
                 return errorResponse(400, 'User has active/defaulted loans on V1/V2');
             }
