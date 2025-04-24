@@ -3,6 +3,10 @@ import { getConnection, closeConnection } from '../init';
 import { Env } from '../../config/interface';
 import { UserResult } from '../../config/interface';
 
+interface LendingHistoryResult {
+    total_count: number;
+    [key: string]: any;
+}
 
 export const getUserAuthentication = async (email: string, password: string, env: Env) => {
     let connection = null;
@@ -164,3 +168,66 @@ export const checkWallet = async (wallet: string, env: Env) => {
     }
 }   
 
+export const getUserLendingHistory = async (wallet: string, page: number = 1, pageSize: number = 10, env: Env) => {
+    let connection = null;
+    try {
+        connection = await getConnection(env);
+        const offset = (page - 1) * pageSize;
+        const result = await connection.query<LendingHistoryResult>(
+            `WITH total_count AS (
+                SELECT COUNT(*) as count 
+                FROM user_pool_lending 
+                LEFT JOIN pool_addresses ON user_pool_lending.pool_id = pool_addresses.id
+                WHERE user_pool_lending.address = $1
+            )
+            SELECT 
+                (SELECT count FROM total_count) as total_count,
+                user_pool_lending.address as address,
+                user_pool_lending.eventname,
+                user_pool_lending.shares,
+                user_pool_lending.assets,
+                user_pool_lending.timestamp,
+                user_pool_lending.blocknumber,
+                pool_addresses.address as pool_address,
+                pool_addresses.name,
+                pool_addresses.symbol
+            FROM user_pool_lending 
+            LEFT JOIN pool_addresses ON user_pool_lending.pool_id = pool_addresses.id
+            WHERE user_pool_lending.address = $1
+            ORDER BY timestamp DESC
+            LIMIT $2 OFFSET $3`,
+            { bind: [wallet, pageSize, offset], type: QueryTypes.SELECT }
+        );
+        return result;
+    } catch(err) {
+        console.error('Error getting user lending history:', err);
+        throw err;
+    } finally {
+        if (connection) {
+            await closeConnection(connection);
+        }
+    }
+}
+
+export const getPoolLpTokenPrice = async (poolAddress: string, env: Env) => {
+    let connection = null;
+    try {
+        connection = await getConnection(env);
+        const result = await connection.query(
+            `SELECT pool_lp_tokens.token_price, pool_lp_tokens.timestamp, pool_lp_tokens.created_at      
+            FROM pool_lp_tokens
+            LEFT JOIN pool_addresses ON pool_addresses.id = pool_lp_tokens.pool_id
+            WHERE pool_addresses.address = $1
+            ORDER BY timestamp DESC`,
+            { bind: [poolAddress], type: QueryTypes.SELECT }
+        );
+        return result;
+    } catch(err) {
+        console.error('Error getting pool lp token price:', err);
+        throw err;
+    } finally {
+        if (connection) {
+            await closeConnection(connection);
+        }
+    }
+}
