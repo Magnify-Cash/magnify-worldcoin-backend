@@ -72,6 +72,12 @@ async function checkLoanStatus(client: any, contractAddress: `0x${string}`, abi:
         functionName: "loans",
         args: [userNFTid]
     });
+    
+    // Check if there are no loans (all values are 0n and isActive is false)
+    if (loanStatus[0] === 0n && loanStatus[1] === 0n && loanStatus[2] === false && loanStatus[3] === 0n && loanStatus[4] === 0n) {
+        return false;
+    }
+
     const serializedStatus = serializeBigInt(loanStatus);
     const startTime = serializedStatus[1];
     const currentStatus = serializedStatus[2];
