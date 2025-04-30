@@ -13,6 +13,7 @@ const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 
 export async function readSoulboundContract(env: Env, viewFunctionName: string, params?: any) {
+        console.log('soulbound contract: ', env.SOULBOUND_NFT_CONTRACT_ADDRESS);
         for (let rpcUrlIndex = 0; rpcUrlIndex < RPC_URLS.length; rpcUrlIndex++) {
             let maxRetries = 3;
             let retryCount = 0;
