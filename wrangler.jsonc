@@ -12,7 +12,22 @@
 	},
 	"compatibility_flags": [
 		"nodejs_compat"
-	  ]
+	],
+	"env": {
+		"production": {
+			"name": "magnify-worldcoin-backend"
+		},
+		"staging": {
+			"name": "magnify-worldcoin-backend-staging"
+		}
+	},
+	"triggers": {
+		"crons": ["0 0 * * *"]
+	},
+	"usage_model": "bundled",
+	"placement": {
+		"mode": "smart"
+	}
 	/**
 	 * Smart Placement
 	 * Docs: https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
