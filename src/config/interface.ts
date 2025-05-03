@@ -10,8 +10,10 @@ export interface Env {
     SOULBOUND_NFT_CONTRACT_ADDRESS: string;
     // New environment variables
     SUPABASE_URL: string; // Supabase instance URL
-    SUPABASE_KEY: string; // Supabase service role key
-    QUICKNODE_RPC_URL: string; // QuickNode RPC endpoint for World Chain
+    SUPABASE_KEY?: string; // Supabase service role key
+    SUPABASE_SERVICE_ROLE_KEY?: string; // Alternative name for Supabase key
+    QUICKNODE_RPC_URL?: string; // QuickNode RPC endpoint for World Chain
+    WORLDCHAIN_RPC_URL?: string; // Alternative RPC endpoint for World Chain
 }
 
 export interface WorldScanTransaction {
