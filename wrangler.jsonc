@@ -4,7 +4,7 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "magnify-worldcoin-backend",
+	"name": "magnify-worldcoin-backend-local",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-03-03",
 	"observability": {

@@ -1,4 +1,7 @@
 import { Env, AuthRequest } from './config/interface';
+import { getConnection, closeConnection } from './database/init';
+import { initPublicClient } from './utils/contract.utils';
+import { healthCheckController } from './controller/health.controller';
 import { saveWalletController, txHistoryController, sendWorldScanNotificationController, checkWalletController, verifyWorldUserController } from './controller/world.controller';
 import { loginController, registerController, getUsersController, grantAdminController, verifyAuthTokenController } from './controller/user.controller';
 import { apiResponse, errorResponse } from './utils/apiResponse.utils';
@@ -50,7 +53,7 @@ import { getSoulboundDataController,
  } from './controller/v3.controller';
 import { getEthBalanceController, getUSDCBalanceController, getTokenMetadataController, getWalletTokenPortfolioController } from './controller/v3.controller';
 
-import { CORS_HEADERS } from './config/constant';
+import { CORS_HEADERS, WORLDCHAIN_RPC_URL } from './config/constant';
 
 export default {
 	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -68,6 +71,8 @@ export default {
 		switch (path) {
 			case '/':
 				return apiResponse(200, 'Welcome to Magnify!');
+			case '/health':
+				return healthCheckController(request, env);
 			case '/saveWallet':
 				return saveWalletController(request, env);
 			case '/getTransactionHistory':

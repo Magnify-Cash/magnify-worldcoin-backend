@@ -1,15 +1,25 @@
 import { Sequelize } from "sequelize";
 import pg from 'pg';
 import { Env } from '../config/interface';
+import { getConfig } from '../config';
 
 export async function getConnection(env: Env): Promise<Sequelize> {
-  console.log('env.DATABASE_URL: ', env.DATABASE_URL);
-  // Create a new connection for each requests
-  const sequelize = new Sequelize(env.DATABASE_URL, {
+  const config = getConfig(env);
+  
+  // Use Supabase URL with credentials instead of DATABASE_URL
+  const databaseUrl = env.DATABASE_URL || `${config.supabaseUrl}/postgres?apikey=${config.supabaseKey}`;
+  
+  console.log('Connecting to database...');
+  
+  // Create a new connection for each request
+  const sequelize = new Sequelize(databaseUrl, {
     dialect: 'postgres',
     dialectModule: pg, // Use the statically imported pg module
     dialectOptions: {
-      ssl: false,
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      },
       // Add statement timeout to prevent hanging queries
       statement_timeout: 10000, // 10 seconds
       query_timeout: 10000, // 10 seconds

@@ -4,10 +4,14 @@ export interface Env {
 	WORLDSCAN_API_KEY: string; // Worldscan API key
 	WORLDCOIN_API_KEY: string; // Worldcoin API key
 	DATABASE_URL: string;
-	JWT_SECRET: string; //
+	JWT_SECRET: string; // JWT Secret for authentication
     V2_MAGNIFY_CONTRACT_ADDRESS: string;
     V3_MAGNIFY_CONTRACT_ADDRESS: string;
     SOULBOUND_NFT_CONTRACT_ADDRESS: string;
+    // New environment variables
+    SUPABASE_URL: string; // Supabase instance URL
+    SUPABASE_KEY: string; // Supabase service role key
+    QUICKNODE_RPC_URL: string; // QuickNode RPC endpoint for World Chain
 }
 
 export interface WorldScanTransaction {

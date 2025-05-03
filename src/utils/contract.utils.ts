@@ -88,7 +88,7 @@ async function checkLoanStatus(client: any, contractAddress: `0x${string}`, abi:
 }
 
 export async function checkUserV2LoanStatus(userNFTid: any, userAddress: `0x${string}`, env: Env) {
-    const client = await initPublicClient(env, WORLDCHAIN_RPC_URL);
+    const client = await initPublicClient(env, env.QUICKNODE_RPC_URL || WORLDCHAIN_RPC_URL);
 
     const defaultedLoan = await readFromDefaultsContract(env, DEFAULTS_CONTRACT, 'hasDefaultedLegacyLoan', userAddress);
 

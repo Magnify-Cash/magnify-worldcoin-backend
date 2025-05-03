@@ -1,0 +1,21 @@
+# Environment Variables Template
+# Copy this file to .dev.vars for local development
+
+# Supabase Configuration
+SUPABASE_URL=https://kontavvojkeleracsucu.supabase.co
+SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtvbnRhdnZvamtlbGVyYWNzdWN1Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NjI0MTc0NiwiZXhwIjoyMDYxODE3NzQ2fQ.J1xhLj6FXBIz0cAmvwjtcQ9Abzwt0YIIUSvq3YTOclc
+
+# QuickNode RPC URL
+QUICKNODE_RPC_URL=https://stylish-blue-layer.worldchain-mainnet.quiknode.pro/d9686072665889b46ddc3132361dfd93bdaef92f/
+
+# JWT Secret
+JWT_SECRET=xqAc0uTE+wlVwqvWAS3xUNqmvVZf+oJqE3EBC1CJxS9dAWt+lwoCpwyDsJOc89CBctmESberODQgJB2WnIiu1w==
+
+# Other required environment variables
+# PRIVATE_KEY=
+# WORLD_COIN_APP_ID=
+# WORLDSCAN_API_KEY=
+# WORLDCOIN_API_KEY=
+# V2_MAGNIFY_CONTRACT_ADDRESS=
+# V3_MAGNIFY_CONTRACT_ADDRESS=
+# SOULBOUND_NFT_CONTRACT_ADDRESS=
