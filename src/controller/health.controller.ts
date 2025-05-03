@@ -8,6 +8,19 @@ export async function healthCheckController(request: Request, env: Env) {
   try {
     const config = getConfig(env);
     
+    // Ensure we have required values
+    if (!config.supabaseUrl) {
+      throw new Error('Missing SUPABASE_URL environment variable');
+    }
+    
+    if (!config.supabaseKey) {
+      throw new Error('Missing SUPABASE_KEY or SUPABASE_SERVICE_ROLE_KEY environment variable');
+    }
+    
+    if (!config.quickNodeUrl) {
+      throw new Error('Missing QUICKNODE_RPC_URL or WORLDCHAIN_RPC_URL environment variable');
+    }
+    
     // Initialize Supabase client
     const supabase = createClient(config.supabaseUrl, config.supabaseKey);
     
