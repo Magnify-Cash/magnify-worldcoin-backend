@@ -46,7 +46,7 @@ export async function mintNFT(action: ClaimAction, signal: `0x${string}`, tokenI
         const client = createWalletClient({
             account,
             chain: worldchain,
-            transport: http('https://worldchain-mainnet.g.alchemy.com/public'),
+            transport: http(WORLDCHAIN_RPC_URL),
         });
 
        
