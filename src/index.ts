@@ -47,6 +47,7 @@ import { getSoulboundDataController,
 	hasDefaultedLegacyLoanController,
 	getDefaultedLegacyLoanController,
 	getDefaultedLegacyLoanFeeController,
+	debugWithdrawalController,
  } from './controller/v3.controller';
 import { getEthBalanceController, getUSDCBalanceController, getTokenMetadataController, getWalletTokenPortfolioController } from './controller/v3.controller';
 
@@ -188,6 +189,8 @@ export default {
 				return getDefaultedLegacyLoanController(request, env);
 			case '/get/defaultedLoan/fee':
 				return getDefaultedLegacyLoanFeeController(env);
+			case '/debug/withdrawal':
+				return debugWithdrawalController(request, env);
 			default:
 				return errorResponse(404, 'Not Found');
 		}

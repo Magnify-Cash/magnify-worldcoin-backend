@@ -163,9 +163,54 @@ export function formatDate(timestamp: string): string {
 
 export async function getPoolCreationTx(env: Env, contractAddress: string) {
     try {
-        const result = await axios.get(`https://api.worldscan.org/api?module=contract&action=getcontractcreation&contractaddresses=${contractAddress}&apikey=${ETHERSCAN_API_KEY}`)
-        return serializeBigInt(result.data.result[0].blockNumber);
+        console.log(`Fetching pool creation TX for contract: ${contractAddress}`);
+        
+        const url = `https://api.worldscan.org/api?module=contract&action=getcontractcreation&contractaddresses=${contractAddress}&apikey=${ETHERSCAN_API_KEY}`;
+        console.log(`Worldscan API URL: ${url}`);
+        
+        const result = await axios.get(url, {
+            timeout: 10000, // 10 second timeout
+            headers: {
+                'User-Agent': 'Magnify-Backend/1.0'
+            }
+        });
+        
+        console.log('Worldscan API response status:', result.status);
+        console.log('Worldscan API response data:', JSON.stringify(result.data));
+        
+        if (!result.data || !result.data.result || !Array.isArray(result.data.result) || result.data.result.length === 0) {
+            throw new Error(`No creation transaction found for contract ${contractAddress}. API response: ${JSON.stringify(result.data)}`);
+        }
+        
+        if (!result.data.result[0].blockNumber) {
+            throw new Error(`Block number not found in creation transaction for contract ${contractAddress}. Response: ${JSON.stringify(result.data.result[0])}`);
+        }
+        
+        const blockNumber = serializeBigInt(result.data.result[0].blockNumber);
+        console.log(`Successfully retrieved block number ${blockNumber} for contract ${contractAddress}`);
+        
+        return blockNumber;
     } catch (err) {
-        throw new Error(`Error getPoolCreationTx: ${contractAddress}`);
+        console.error(`Error in getPoolCreationTx for ${contractAddress}:`, {
+            error: err,
+            message: err instanceof Error ? err.message : 'Unknown error',
+            response: axios.isAxiosError(err) ? {
+                status: err.response?.status,
+                statusText: err.response?.statusText,
+                data: err.response?.data
+            } : 'Not an Axios error'
+        });
+        
+        if (axios.isAxiosError(err)) {
+            if (err.code === 'ECONNABORTED') {
+                throw new Error(`Worldscan API timeout for contract ${contractAddress}`);
+            } else if (err.response?.status === 429) {
+                throw new Error(`Worldscan API rate limit exceeded for contract ${contractAddress}`);
+            } else if (err.response?.status) {
+                throw new Error(`Worldscan API error ${err.response.status}: ${err.response.statusText} for contract ${contractAddress}`);
+            }
+        }
+        
+        throw new Error(`Failed to get pool creation transaction for contract ${contractAddress}: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
 }

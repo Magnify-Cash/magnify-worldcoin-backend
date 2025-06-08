@@ -799,40 +799,76 @@ export async function getPoolWarmupDurationController(request: Request, env: Env
         const url = new URL(request.url);
         const contractAddress = url.searchParams.get("contract");
 
+        console.log('Warmup Duration Controller - Raw contract param:', contractAddress);
+        
         if (!contractAddress) {
             return errorResponse(400, 'contractAddress is required');
         }
 
+        // Validate contract address format
+        if (!/^0x[a-fA-F0-9]{40}$/.test(contractAddress)) {
+            console.error('Invalid contract address format:', contractAddress);
+            return errorResponse(400, 'Invalid contract address format. Expected 0x followed by 40 hex characters');
+        }
+
         const normalizedAddress = contractAddress.toLowerCase();
+        console.log('Normalized contract address:', normalizedAddress);
 
         let deployedBlockNumber;
-        // if (normalizedAddress === '0x75e0b3e2c5de6abeb77c3e0e143d8e6158daf4d5') {
-        //     deployedBlockNumber = 12219770;
-        // } else if (normalizedAddress === '0x6d92a3aaadf838ed13cb8697eb9d35fcf6c4dba9') {
-        //     deployedBlockNumber = 12219854;
-        // } else {
-        //     return errorResponse(400, 'Unknown contract address, no deployment block number found');
-        // }
+        
+        try {
+            console.log('Attempting to get pool creation transaction...');
+            deployedBlockNumber = await getPoolCreationTx(env, normalizedAddress);
+            console.log('Retrieved deployment block number:', deployedBlockNumber);
+        } catch (getPoolCreationError) {
+            console.error('Error getting pool creation transaction:', getPoolCreationError);
+            return errorResponse(500, 'Failed to retrieve pool deployment information from Worldscan');
+        }
 
-        deployedBlockNumber = await getPoolCreationTx(env, normalizedAddress);
+        let deployedBlockTimestamp;
+        try {
+            console.log('Getting block timestamp for block:', deployedBlockNumber);
+            deployedBlockTimestamp = await getBlockTimestamp(env, deployedBlockNumber);
+            console.log('Retrieved deployment timestamp:', deployedBlockTimestamp);
+        } catch (timestampError) {
+            console.error('Error getting block timestamp:', timestampError);
+            return errorResponse(500, 'Failed to retrieve block timestamp');
+        }
 
-        const deployedBlockTimestamp = await getBlockTimestamp(env, deployedBlockNumber);
-        const startTimestampResult = await readMagnifyV3Contract(env, contractAddress, 'startTimestamp');
+        let startTimestampResult;
+        try {
+            console.log('Reading startTimestamp from contract...');
+            startTimestampResult = await readMagnifyV3Contract(env, contractAddress, 'startTimestamp');
+            console.log('Contract startTimestamp result:', startTimestampResult);
+        } catch (contractError) {
+            console.error('Error reading contract startTimestamp:', contractError);
+            return errorResponse(500, 'Failed to read contract startTimestamp');
+        }
+
         const startTimestamp = Number(serializeBigInt(startTimestampResult));
+        console.log('Parsed startTimestamp:', startTimestamp);
 
         // Calculate warmup period in seconds (ensure both are the same type)
         const warmupPeriodSeconds = startTimestamp - Number(deployedBlockTimestamp);
+        console.log('Warmup period seconds:', warmupPeriodSeconds);
+        
         // Convert to days (86400 seconds in a day)
         const warmupPeriodDays = warmupPeriodSeconds / 86400;
+        console.log('Warmup period days:', warmupPeriodDays);
 
         const result = {
             warmupPeriodDays: parseFloat(warmupPeriodDays.toFixed(2))
         };
 
+        console.log('Final result:', result);
         return apiResponse(200, 'Warmup period calculated successfully', serializeBigInt(result));
     } catch (err) {
-        console.log(err);
-        return errorResponse(500, 'Error calculating pool warmup duration');
+        console.error('PoolWarmupDurationController error details:', {
+            error: err,
+            message: err instanceof Error ? err.message : 'Unknown error',
+            stack: err instanceof Error ? err.stack : 'No stack trace'
+        });
+        return errorResponse(500, `Error calculating pool warmup duration: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
 }
 
@@ -1243,5 +1279,144 @@ export async function getPoolLpTokenPriceController(request: Request, env: Env) 
         return apiResponse(200, 'getPoolLpTokenPrice successful', price);
     } catch (err) {
         return errorResponse(500, 'Error getPoolLpTokenPriceCtrl');
+    }
+}
+
+export async function debugWithdrawalController(request: Request, env: Env) {
+    try {
+        const url = new URL(request.url);
+        const contractAddress = url.searchParams.get("contract");
+        const walletAddress = url.searchParams.get("wallet");
+        const lpAmount = url.searchParams.get("lpAmount");
+
+        if (!contractAddress || !walletAddress) {
+            return errorResponse(400, 'contractAddress and walletAddress are required');
+        }
+
+        console.log('Withdrawal Debug - Input params:', { contractAddress, walletAddress, lpAmount });
+
+        // Validate contract address format
+        if (!/^0x[a-fA-F0-9]{40}$/.test(contractAddress)) {
+            return errorResponse(400, 'Invalid contract address format');
+        }
+
+        if (!/^0x[a-fA-F0-9]{40}$/.test(walletAddress)) {
+            return errorResponse(400, 'Invalid wallet address format');
+        }
+
+        const debugData: any = {
+            contractAddress,
+            walletAddress,
+            timestamp: new Date().toISOString()
+        };
+
+        // 1. Get pool status
+        try {
+            const poolStatusFunctions = [
+                { name: "isWarmup", interface: new ethers.Interface(["function isWarmup() public view returns (bool)"]) },
+                { name: "isActive", interface: new ethers.Interface(["function isActive() public view returns (bool)"]) },
+                { name: "isCooldown", interface: new ethers.Interface(["function isCooldown() public view returns (bool)"]) },
+                { name: "isExpired", interface: new ethers.Interface(["function isExpired() public view returns (bool)"]) }
+            ];
+
+            const statusResults = await Promise.all(
+                poolStatusFunctions.map(func => 
+                    rpcBatchCall(WORLDCHAIN_RPC_URL, "eth_call", [
+                        { to: contractAddress, data: func.interface.encodeFunctionData(func.name, []) },
+                        "latest",
+                    ])
+                )
+            );
+
+            const parseHexBoolean = (hexValue: string): boolean => 
+                hexValue === '0x0000000000000000000000000000000000000000000000000000000000000001';
+
+            const [isWarmupHex, isActiveHex, isCooldownHex, isExpiredHex] = statusResults;
+            
+            debugData.poolStatus = {
+                isWarmup: parseHexBoolean(isWarmupHex),
+                isActive: parseHexBoolean(isActiveHex),
+                isCooldown: parseHexBoolean(isCooldownHex),
+                isExpired: parseHexBoolean(isExpiredHex),
+            };
+
+            debugData.activeStatus = Object.keys(debugData.poolStatus).find(key => debugData.poolStatus[key] === true);
+            console.log('Pool status:', debugData.poolStatus, 'Active:', debugData.activeStatus);
+        } catch (err) {
+            console.error('Error getting pool status:', err);
+            debugData.poolStatusError = err instanceof Error ? err.message : 'Unknown error';
+        }
+
+        // 2. Get user LP balance
+        try {
+            const userBalance = await readMagnifyV3Contract(env, contractAddress, 'balanceOf', walletAddress);
+            debugData.userLpBalance = serializeBigInt(userBalance) / 10 ** 6;
+            console.log('User LP balance:', debugData.userLpBalance);
+        } catch (err) {
+            console.error('Error getting user LP balance:', err);
+            debugData.userLpBalanceError = err instanceof Error ? err.message : 'Unknown error';
+        }
+
+        // 3. Get total pool assets
+        try {
+            const totalAssets = await readMagnifyV3Contract(env, contractAddress, 'totalAssets');
+            debugData.totalAssets = serializeBigInt(totalAssets) / 10 ** 6;
+            console.log('Total pool assets:', debugData.totalAssets);
+        } catch (err) {
+            console.error('Error getting total assets:', err);
+            debugData.totalAssetsError = err instanceof Error ? err.message : 'Unknown error';
+        }
+
+        // 4. Get max redeem for user
+        try {
+            const maxRedeem = await readMagnifyV3Contract(env, contractAddress, 'maxRedeem', walletAddress);
+            debugData.maxRedeem = serializeBigInt(maxRedeem) / 10 ** 6;
+            console.log('Max redeem for user:', debugData.maxRedeem);
+        } catch (err) {
+            console.error('Error getting max redeem:', err);
+            debugData.maxRedeemError = err instanceof Error ? err.message : 'Unknown error';
+        }
+
+        // 5. Get max withdraw for user
+        try {
+            const maxWithdraw = await readMagnifyV3Contract(env, contractAddress, 'maxWithdraw', walletAddress);
+            debugData.maxWithdraw = serializeBigInt(maxWithdraw) / 10 ** 6;
+            console.log('Max withdraw for user:', debugData.maxWithdraw);
+        } catch (err) {
+            console.error('Error getting max withdraw:', err);
+            debugData.maxWithdrawError = err instanceof Error ? err.message : 'Unknown error';
+        }
+
+        // 6. If lpAmount provided, test preview redeem
+        if (lpAmount) {
+            try {
+                const lpAmountBigInt = BigInt(Math.floor(parseFloat(lpAmount) * 10 ** 6));
+                const previewRedeem = await readMagnifyV3Contract(env, contractAddress, 'previewRedeem', lpAmountBigInt);
+                debugData.previewRedeem = {
+                    inputLpAmount: parseFloat(lpAmount),
+                    inputLpAmountBigInt: lpAmountBigInt.toString(),
+                    previewedUsdcAmount: serializeBigInt(previewRedeem) / 10 ** 6
+                };
+                console.log('Preview redeem result:', debugData.previewRedeem);
+            } catch (err) {
+                console.error('Error in preview redeem:', err);
+                debugData.previewRedeemError = err instanceof Error ? err.message : 'Unknown error';
+            }
+        }
+
+        // 7. Check for active loans
+        try {
+            const activeLoan = await readMagnifyV3Contract(env, contractAddress, 'getActiveLoan', walletAddress);
+            debugData.activeLoan = serializeBigInt(activeLoan);
+            console.log('Active loan data:', debugData.activeLoan);
+        } catch (err) {
+            console.error('Error getting active loan:', err);
+            debugData.activeLoanError = err instanceof Error ? err.message : 'Unknown error';
+        }
+
+        return apiResponse(200, 'Withdrawal debug data collected', debugData);
+    } catch (err) {
+        console.error('Debug withdrawal controller error:', err);
+        return errorResponse(500, `Debug withdrawal error: ${err instanceof Error ? err.message : 'Unknown error'}`);
     }
 }
