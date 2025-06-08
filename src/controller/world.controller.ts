@@ -15,14 +15,35 @@ import MagnifyV2Abi from "../config/contracts/MagnifyV2.json"
 
 export async function saveWalletController(request: Request, env: Env) {
     try {
-        const { wallet, notification } = (await request.json()) as { wallet: string; notification: boolean };
-        const result = await saveWallet(wallet, notification, env);
+        // Add logging to debug the request
+        console.log('SaveWallet request received, parsing body...');
+        
+        const requestBody = await request.json() as { wallet?: string; notification?: boolean };
+        console.log('Parsed request body:', JSON.stringify(requestBody));
+        
+        const { wallet, notification } = requestBody;
+        
+        // Validate required parameters
+        if (!wallet || typeof wallet !== 'string') {
+            console.error('Invalid wallet parameter:', wallet);
+            return errorResponse(400, 'Wallet address is required and must be a string');
+        }
+        
+        // Default notification to false if not provided or invalid
+        const validNotification = typeof notification === 'boolean' ? notification : false;
+        
+        console.log('Calling saveWallet with params:', { wallet, notification: validNotification });
+        
+        const result = await saveWallet(wallet, validNotification, env);
         if (!result) {
             return errorResponse(400, 'Failed to save wallet');
         }
         return apiResponse(200, 'Wallet saved successfully', result);
     } catch (error) {
-        return errorResponse(500, 'Internal server error');
+        console.error('SaveWalletController error:', error);
+        // More specific error message for debugging
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        return errorResponse(500, `Internal server error: ${errorMessage}`);
     }
 }
 

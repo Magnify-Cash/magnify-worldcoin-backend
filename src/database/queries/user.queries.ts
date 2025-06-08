@@ -131,6 +131,16 @@ export const grantAdminAccess = async (userId: string, env: Env) => {
 export const saveWallet = async (wallet: string, notification: boolean, env: Env) => {
     let connection = null;
     try {
+        // Validate parameters before database operation
+        if (!wallet || typeof wallet !== 'string') {
+            throw new Error(`Invalid wallet parameter: ${wallet}`);
+        }
+        if (typeof notification !== 'boolean') {
+            throw new Error(`Invalid notification parameter: ${notification} (type: ${typeof notification})`);
+        }
+        
+        console.log('SaveWallet DB operation with params:', { wallet, notification, type: typeof notification });
+        
         connection = await getConnection(env);
         const result = await connection.query(
             `INSERT INTO user_wallets (wallet, notification) VALUES ($1, $2)
@@ -138,9 +148,12 @@ export const saveWallet = async (wallet: string, notification: boolean, env: Env
             `,
             { bind: [wallet, notification], type: QueryTypes.INSERT }
         ); 
+        
+        console.log('SaveWallet DB result:', result);
         return result[0];
     } catch(err) {
         console.error('Error saving wallet:', err);
+        console.error('Parameters were:', { wallet, notification, walletType: typeof wallet, notificationType: typeof notification });
         throw err;
     } finally {
         if (connection) {
